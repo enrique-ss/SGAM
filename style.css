@@ -39,8 +39,22 @@ button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; tr
 .btn-new { background: var(--primary); color: #fff; padding: 0 15px; white-space: nowrap; }
 .btn-new:hover { filter: brightness(1.1); }
 
-/* Grid */
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; animation: up 0.5s; }
+/* SISTEMA DE ABAS (TABS) - NOVO */
+.tab-content {
+    display: none; /* Esconde todas as abas por padrão */
+    animation: fadeIn 0.4s ease-out;
+}
+.tab-content.active {
+    display: block; /* Mostra apenas a ativa */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Grid (Mantido) */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; }
 .col-2 { grid-column: span 2; }
 .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -87,9 +101,6 @@ path:hover { transform: scale(1.03); }
 .badge { background: rgba(244, 63, 94, 0.2); color: var(--danger); padding: 3px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
 .danger { color: var(--danger); }
 
-/* Animações */
-@keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
 /* Responsivo */
 @media(max-width: 840px) {
     body { flex-direction: column; height: auto; overflow-y: auto; }
@@ -98,9 +109,7 @@ path:hover { transform: scale(1.03); }
     nav { display: flex; gap: 5px; align-items: center; }
     nav a span, .info { display: none; }
     .user-profile { margin: 0; padding: 0; border: none; }
-    
     main { overflow-y: visible; height: auto; }
-    
     .grid { grid-template-columns: 1fr; }
     .col-2 { grid-column: span 1; }
     .donut-wrap { justify-content: center; }

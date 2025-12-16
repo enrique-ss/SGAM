@@ -12,11 +12,12 @@
     <aside>
         <div class="logo">RSTI<span>Final</span></div>
         <nav>
-            <a href="#" class="active">📊 <span>Dash</span></a>
-            <a href="#">👥 <span>Clientes</span></a>
-            <a href="#">🔥 <span>Demandas</span></a>
-            <a href="#">📦 <span>Entregas</span></a>
-            <a href="#">⚙️ <span>Config</span></a>
+            <!-- Adicionado data-target para identificar a aba -->
+            <a href="#" class="nav-link active" data-target="dash">📊 <span>Dash</span></a>
+            <a href="#" class="nav-link" data-target="clientes">👥 <span>Clientes</span></a>
+            <a href="#" class="nav-link" data-target="demandas">🔥 <span>Demandas</span></a>
+            <a href="#" class="nav-link" data-target="entregas">📦 <span>Entregas</span></a>
+            <a href="#" class="nav-link" data-target="config">⚙️ <span>Config</span></a>
         </nav>
         <div class="user-profile">
             <div class="avatar">AD</div>
@@ -29,91 +30,130 @@
 
     <main>
         <header>
-            <h1>Visão Geral</h1>
+            <!-- O título será atualizado pelo JS -->
+            <h1 id="page-title">Visão Geral</h1>
             <div class="actions">
                 <button id="theme">🌙</button>
                 <button class="btn-new">＋ Nova</button>
             </div>
         </header>
 
-        <div class="grid">
-            
-            <div class="card metric">
-                <div>
-                    <h3>Ativos</h3>
-                    <div class="val">12</div>
+        <!-- ABA 1: DASHBOARD (Conteúdo Original) -->
+        <section id="dash" class="tab-content active">
+            <div class="grid">
+                <div class="card metric">
+                    <div>
+                        <h3>Ativos</h3>
+                        <div class="val">12</div>
+                    </div>
+                    <div class="trend up">↗ 12%</div>
                 </div>
-                <div class="trend up">↗ 12%</div>
-            </div>
-            
-            <div class="card metric">
-                <div>
-                    <h3>Abertas</h3>
-                    <div class="val">8</div>
+                
+                <div class="card metric">
+                    <div>
+                        <h3>Abertas</h3>
+                        <div class="val">8</div>
+                    </div>
+                    <div class="trend neutral">➡ 0%</div>
                 </div>
-                <div class="trend neutral">➡ 0%</div>
-            </div>
-            
-            <div class="card metric">
-                <div>
-                    <h3>Atrasadas</h3>
-                    <div class="val danger">3</div>
+                
+                <div class="card metric">
+                    <div>
+                        <h3>Atrasadas</h3>
+                        <div class="val danger">3</div>
+                    </div>
+                    <div class="trend down">↘ 2</div>
                 </div>
-                <div class="trend down">↘ 2</div>
-            </div>
 
-            <div class="card col-2">
-                <div class="card-head">
-                    <h3>Demandas por Serviço</h3>
-                    <span>⋮</span>
+                <div class="card col-2">
+                    <div class="card-head">
+                        <h3>Demandas por Serviço</h3>
+                        <span>⋮</span>
+                    </div>
+                    <div id="bars" class="bars"></div>
                 </div>
-                <div id="bars" class="bars"></div>
-            </div>
 
+                <div class="card">
+                    <div class="card-head"><h3>Status Geral</h3></div>
+                    <div class="donut-wrap">
+                        <div id="donut"></div>
+                        <div id="legend" class="legend"></div>
+                    </div>
+                </div>
+
+                <div class="card col-2">
+                    <div class="card-head"><h3>Próximas Entregas</h3></div>
+                    <div class="list">
+                        <div class="item">
+                            <div class="icon purple">IG</div>
+                            <div class="desc">
+                                <b>Instagram Post</b>
+                                <small>31/Abr • Social</small>
+                            </div>
+                            <div class="dot warn"></div>
+                        </div>
+                        <div class="item">
+                            <div class="icon blue">BN</div>
+                            <div class="desc">
+                                <b>Banner Site</b>
+                                <small>02/Jun • Design</small>
+                            </div>
+                            <div class="dot info"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head"><h3 class="danger">Atenção</h3></div>
+                    <div class="list">
+                        <div class="item">
+                            <div class="desc">
+                                <b>Natal Campaign</b>
+                                <small class="danger">Atrasada há 5 dias</small>
+                            </div>
+                            <span class="badge">URGENTE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA 2: CLIENTES -->
+        <section id="clientes" class="tab-content">
             <div class="card">
-                <div class="card-head"><h3>Status Geral</h3></div>
-                <div class="donut-wrap">
-                    <div id="donut"></div>
-                    <div id="legend" class="legend"></div>
-                </div>
-            </div>
-
-            <div class="card col-2">
-                <div class="card-head"><h3>Próximas Entregas</h3></div>
+                <div class="card-head"><h3>Lista de Clientes</h3></div>
                 <div class="list">
-                    <div class="item">
-                        <div class="icon purple">IG</div>
-                        <div class="desc">
-                            <b>Instagram Post</b>
-                            <small>31/Abr • Social</small>
-                        </div>
-                        <div class="dot warn"></div>
-                    </div>
-                    <div class="item">
-                        <div class="icon blue">BN</div>
-                        <div class="desc">
-                            <b>Banner Site</b>
-                            <small>02/Jun • Design</small>
-                        </div>
-                        <div class="dot info"></div>
-                    </div>
+                    <div class="item"><div class="desc"><b>Empresa A</b><small>Ativo</small></div></div>
+                    <div class="item"><div class="desc"><b>Empresa B</b><small>Inativo</small></div></div>
+                    <div class="item"><div class="desc"><b>Empresa C</b><small>Ativo</small></div></div>
                 </div>
             </div>
+        </section>
 
+        <!-- ABA 3: DEMANDAS -->
+        <section id="demandas" class="tab-content">
             <div class="card">
-                <div class="card-head"><h3 class="danger">Atenção</h3></div>
-                <div class="list">
-                    <div class="item">
-                        <div class="desc">
-                            <b>Natal Campaign</b>
-                            <small class="danger">Atrasada há 5 dias</small>
-                        </div>
-                        <span class="badge">URGENTE</span>
-                    </div>
-                </div>
+                <h3>Gerenciar Demandas</h3>
+                <p style="margin-top:10px; color:var(--muted)">Conteúdo da aba demandas...</p>
             </div>
+        </section>
 
-        </div>
+        <!-- ABA 4: ENTREGAS -->
+        <section id="entregas" class="tab-content">
+            <div class="card">
+                <h3>Histórico de Entregas</h3>
+                <p style="margin-top:10px; color:var(--muted)">Conteúdo da aba entregas...</p>
+            </div>
+        </section>
+
+        <!-- ABA 5: CONFIG -->
+        <section id="config" class="tab-content">
+            <div class="card">
+                <h3>Configurações do Sistema</h3>
+                <p style="margin-top:10px; color:var(--muted)">Preferências de usuário, notificações, etc.</p>
+            </div>
+        </section>
+
     </main>
 
     <script src="script.js"></script>
