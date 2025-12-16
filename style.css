@@ -91,7 +91,7 @@ path:hover { transform: scale(1.03); }
 @keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Responsivo */
-@media(max-width: 768px) {
+@media(max-width: 840px) {
     body { flex-direction: column; height: auto; overflow-y: auto; }
     aside { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; padding: 10px 15px; border-right: none; border-bottom: 1px solid var(--border); }
     .logo { margin: 0; }
