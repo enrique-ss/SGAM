@@ -536,10 +536,10 @@ path:hover {
         padding: 15px; 
     }
     .grid { 
-        grid-template-columns: 1fr; 
+        grid-template-columns: repeat(2, 1fr); 
     }
     .col-2, .col-3 { 
-        grid-column: span 1; 
+        grid-column: span 2; 
     }
     .metric .val { 
         font-size: 1.5rem; 
