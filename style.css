@@ -44,10 +44,8 @@ body {
     font-family: 'Inter', sans-serif; 
     display: flex; 
     height: 100vh; 
-    overflow: hidden;
+    overflow: hidden; 
 }
-
-option { background-color: var(--glass-card); }
 
 /* --- SIDEBAR --- */
 aside { 
