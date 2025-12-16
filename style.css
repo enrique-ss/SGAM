@@ -92,10 +92,10 @@ aside.hidden ~ main .btn-toggle { display: block; }
 .tab-content.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* --- GRID LAYOUT (DESKTOP: 4 COLUNAS) --- */
+/* --- GRID LAYOUT --- */
 .grid { 
     display: grid; 
-    /* Desktop: 4 colunas iguais */
+    /* Desktop Padrão: 4 Colunas */
     grid-template-columns: repeat(4, 1fr); 
     gap: 24px; 
 }
@@ -108,12 +108,7 @@ aside.hidden ~ main .btn-toggle { display: block; }
     display: flex; flex-direction: column;
 }
 
-/* 
-   AQUI ESTÁ A MUDANÇA:
-   No Desktop (4 colunas), tanto o .col-3 quanto o .col-2 
-   agora ocupam 2 colunas.
-   Isso faz com que eles dividam a tela 50%/50%.
-*/
+/* Blocos maiores ocupam 2 colunas no desktop (50%) */
 .col-3, .col-2 { 
     grid-column: span 2; 
 }
@@ -121,22 +116,26 @@ aside.hidden ~ main .btn-toggle { display: block; }
 .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .card-head h3 { font-size: 0.95rem; font-weight: 600; color: var(--text); }
 
-/* --- METRICS --- */
+/* --- METRICS (Padrão Desktop/Tablet: Trend à Direita) --- */
 .metric { 
-    display: flex; justify-content: space-between; align-items: flex-start; 
+    display: flex; 
+    flex-direction: row; /* Lado a Lado */
+    justify-content: space-between; 
+    align-items: flex-start; 
     height: 120px; 
-    /* Métricas não têm classe de coluna, então ocupam 1 espaço (padrão do grid) */
 }
+
 .metric div:first-child { display: flex; flex-direction: column; gap: 8px; }
-.metric h3 { font-size: 0.9rem; font-weight: 600; color: var(--text); }
-.metric .val { font-size: 2.2rem; font-weight: 700; line-height: 1; }
+.metric h3 { font-size: 0.9rem; font-weight: 600; color: var(--text); margin: 0; }
+.metric .val { font-size: 2.2rem; font-weight: 700; line-height: 1; margin: 0; }
 
 .val.good { color: var(--primary); }
 .val.success { color: var(--success); }
 .val.warning { color: var(--warn); }
 .val.danger { color: var(--danger); }
 
-.trend { font-size: 0.8rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; }
+/* Trend Badge */
+.trend { font-size: 0.8rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap; }
 .trend.up { background: rgba(16, 185, 129, 0.15); color: var(--success); }
 .trend.neutral { background: var(--border); color: var(--muted); }
 
@@ -187,50 +186,54 @@ path:hover { transform: scale(1.05); filter: drop-shadow(0 0 5px rgba(0,0,0,0.2)
 .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; }
 .badge.success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
 .badge.danger { background: rgba(244, 63, 94, 0.2); color: var(--danger); }
-.danger { color: var(--danger); }
+h3.danger { color: var(--danger); }
 
 /* --- RESPONSIVIDADE --- */
 
-/* Tablet (1024px) */
+/* TABLET / LAPTOP PEQUENO (840px até 1024px) */
+/* Aqui o trend ainda deve ficar à DIREITA */
 @media(max-width: 1024px) {
     .grid { grid-template-columns: repeat(2, 1fr); }
-    /* No tablet, gráficos ficam lado a lado (1 coluna cada no grid de 2) */
-    .col-3, .col-2 { grid-column: span 1; }
+    /* Gráficos ocupam linha inteira */
+    .col-3, .col-2 { grid-column: span 2; }
 }
 
-/* Mobile (840px) */
+/* SIDEBAR COLLAPSE (840px) */
 @media(max-width: 840px) {
     body { flex-direction: column; height: auto; overflow-y: auto; }
-    
     aside { 
         position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; margin-left: 0;
     }
     aside.hidden { margin-left: -240px; }
-    
     .btn-toggle { display: block !important; }
-
     main { padding: 20px; height: auto; overflow: visible; }
     
-    /* MANTÉM O LAYOUT 2x2 PARA MÉTRICAS */
-    .grid { 
-        grid-template-columns: 1fr 1fr; /* 2 Colunas */
-        gap: 15px;
-    }
-
-    /* Gráficos e Listas: Forçados a ocupar 2 colunas para empilhar verticalmente */
-    .col-3, .col-2 { 
-        grid-column: span 2; 
-    }
+    /* Mantém grid de 2 colunas para ficar os blocos 2x2 */
+    .grid { grid-template-columns: 1fr 1fr; gap: 15px; }
+    .col-3, .col-2 { grid-column: span 2; }
     
-    /* Métricas: Mantêm o padrão (span 1), gerando o efeito 2x2 */
-
-    /* Ajustes Mobile */
-    .bars { height: 160px; }
-    .donut-wrap { flex-direction: row; justify-content: center; } /* Mantém donut e legenda lado a lado se couber */
-    .metric .val { font-size: 1.8rem; }
+    /* IMPORTANTE: Aqui o .metric ainda é ROW (Trend à direita) */
 }
 
+/* MOBILE PURO (480px) */
+/* Aqui sim o trend vai para baixo */
 @media(max-width: 480px) {
-    /* Em telas muito pequenas, o donut pode quebrar, então ajustamos */
+    /* Métrica vira coluna (um embaixo do outro) */
+    .metric {
+        flex-direction: column; 
+        justify-content: center;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    /* Trend vai para baixo */
+    .trend {
+        align-self: flex-start;
+        margin-top: auto;
+    }
+
+    /* Outros ajustes de mobile */
+    .metric .val { font-size: 1.8rem; }
     .donut-wrap { flex-direction: column; height: auto; align-items: flex-start; }
+    .bars { height: 160px; }
 }
