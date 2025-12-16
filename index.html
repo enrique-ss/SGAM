@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSTI Final</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- alo -->
+
     <aside id="sidebar">
         <div class="sidebar-header">
             <div class="logo">RSTI<span>Final</span></div>
@@ -38,7 +38,7 @@
             </div>
             <div class="actions">
                 <button id="theme">🌙</button>
-                <button class="btn-new">＋ Novo</button>
+                <button class="btn-new" id="btnNewDemand">＋ Novo</button>
             </div>
         </header>
 
@@ -92,7 +92,7 @@
                 </div>
 
                 <div class="card col-3">
-                    <div class="card-head" calss="good"><h3>Próximas Entregas</h3></div>
+                    <div class="card-head"><h3>Próximas Entregas</h3></div>
                     <div class="list">
                         <div class="item">
                             <div class="icon purple">IG</div>
@@ -141,29 +141,26 @@
         <section id="demandas" class="tab-content">
             <div class="card">
                 <h3>Gerenciar Demandas</h3>
-                <p style="margin-top:10px;color:var(--muted)">Conteúdo da aba demandas...</p>
+                <p style="margin-top:10px;color:var(--text-muted)">Conteúdo da aba demandas...</p>
             </div>
         </section>
 
         <section id="entregas" class="tab-content">
             <div class="card">
                 <h3>Histórico de Entregas</h3>
-                <p style="margin-top:10px;color:var(--muted)">Conteúdo da aba entregas...</p>
+                <p style="margin-top:10px;color:var(--text-muted)">Conteúdo da aba entregas...</p>
             </div>
         </section>
 
         <section id="config" class="tab-content">
             <div class="card">
                 <h3>Configurações do Sistema</h3>
-                <p style="margin-top:10px;color:var(--muted)">Preferências de usuário, notificações, etc.</p>
+                <p style="margin-top:10px;color:var(--text-muted)">Preferências de usuário, notificações, etc.</p>
             </div>
         </section>
 
     </main>
 
-    <script src="src/script.js"></script>
-<<<<<<< HEAD
-=======
     <!-- MODAL NOVA DEMANDA -->
     <div id="modalDemand" class="modal">
         <div class="modal-overlay"></div>
@@ -189,7 +186,6 @@
                             <option value="copy">✍️ Copywriting</option>
                             <option value="video">🎥 Vídeo</option>
                             <option value="seo">🔍 SEO</option>
-                            <option value="dev">💻 Desenvolvimento</option>
                         </select>
                     </div>
 
@@ -229,9 +225,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
->>>>>>> 720fe94c0d74aacc6f0633f620f324c9a4b2dd93
-=======
->>>>>>> parent of 663e1b5 (test)
+    <script src="src/script.js"></script>
 </body>
 </html>
