@@ -6,11 +6,15 @@ CREATE TABLE usuario (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
     nome VARCHAR(100) NOT NULL, 
     email VARCHAR(100) NOT NULL UNIQUE, 
-    senha_hash VARCHAR(255) NOT NULL, 
+    senha VARCHAR(255) NOT NULL, 
     telefone VARCHAR(20) UNIQUE, 
     nivel_acesso ENUM('admin', 'colaborador', 'cliente') NOT NULL DEFAULT 'cliente' 
 ); 
 
+CREATE TABLE cliente (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(55)
+);
 
 CREATE TABLE tipo_servico (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -27,6 +31,7 @@ CREATE TABLE demandas (
     prazo DATE NOT NULL,
     prioridade VARCHAR(20) NOT NULL, 
     status_servico ENUM('Em andamento', 'Em revisão', 'Finalizado') NOT NULL DEFAULT 'Em andamento', 
+    data_entrega DATE NOT NULL,
     
     FOREIGN KEY (tipo_servico_id) REFERENCES tipo_servico(id),
     FOREIGN KEY (cliente_id) REFERENCES usuario(id)
