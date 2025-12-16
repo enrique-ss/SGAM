@@ -60,6 +60,10 @@ aside {
 }
 aside.hidden { margin-left: -250px; opacity: 0; }
 
+header h1 { 
+    background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
 .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
 
 .logo { 
@@ -357,7 +361,7 @@ path:hover { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(255,255,25
     .col-3, .col-2 { grid-column: span 1; }
 }
 
-@media(max-width: 840px) {
+@media(max-width: 880px) {
     body { flex-direction: column; height: auto; overflow-y: auto; }
     aside { 
         position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; margin-left: 0;
