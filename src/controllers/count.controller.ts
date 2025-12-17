@@ -32,36 +32,36 @@ export const countCancelado = async (req: any, res: any) => {
 // Tipos de Serviços 
 
 export const countSocialMedia = async (req: any, res: any) => {
-  const servico = await db('tipo_servico')
-  .where("nome", "Social Media")
+  const servico = await db('demandas')
+  .where("tipo_servico_id", 1)
   .count("id as total");
   return res.json(servico);
 };
 
 export const countDesignGrafico = async (req: any, res: any) => {
-  const servico = await db('tipo_servico')
-  .where("nome", "Design Gráfico")
+  const servico = await db('demandas')
+  .where("tipo_servico_id", 2)
   .count("id as total");
   return res.json(servico);
 };
 
 export const countCopywriting = async (req: any, res: any) => {
-  const servico = await db('tipo_servico')
-  .where("nome", "Copywriting")
+  const servico = await db('demandas')
+  .where("tipo_servico_id", 3)
   .count("id as total");
   return res.json(servico);
 };
 
 export const countProducaoConteudo = async (req: any, res: any) => {
-  const servico = await db('tipo_servico')
-  .where("nome", "Produção de Conteúdo")
+  const servico = await db('demandas')
+  .where("tipo_servico_id", 4)
   .count("id as total");
   return res.json(servico);
 };
 
 export const countRelatoriosEstrategia = async (req: any, res: any) => {
-  const servico = await db('tipo_servico')
-  .where("nome", "Relatórios e Estratégia")
+  const servico = await db('demandas')
+  .where("tipo_servico_id", 5)
   .count("id as total");
   return res.json(servico);
 };
