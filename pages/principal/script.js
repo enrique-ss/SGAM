@@ -1,29 +1,61 @@
 // ==========================================
-// VERIFICAR AUTENTICAÇÃO
+// CONFIGURAÇÃO DE PERMISSÕES (RBAC)
+// ==========================================
+const PERMISSIONS = {
+    // Admin tem acesso a tudo
+    admin: {
+        tabs: ['dash', 'clientes', 'demandas', 'entregas', 'config'],
+        canCreateDemand: true,
+        canEditSettings: true,
+        defaultTab: 'dash'
+    },
+    // Colaborador foca em execução
+    colaborador: {
+        tabs: ['dash', 'demandas', 'entregas'],
+        canCreateDemand: true,
+        canEditSettings: false,
+        defaultTab: 'dash'
+    },
+    // Cliente só vê entregas e demandas dele (simplificado para entregas aqui)
+    cliente: {
+        tabs: ['entregas', 'config'], // Pode ver entregas e configurar perfil próprio
+        canCreateDemand: false, // Cliente solicita por outro canal ou botão específico
+        canEditSettings: false,
+        defaultTab: 'entregas'
+    }
+};
+
+// ==========================================
+// VERIFICAR AUTENTICAÇÃO E PERMISSÕES
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
     // 1. Verificar credenciais
     const isLoggedIn = localStorage.getItem('isLoggedIn');
     const currentUserRaw = localStorage.getItem('currentUser');
     
-    // Se não tiver login ou dados, expulsa imediatamente
     if (!isLoggedIn || !currentUserRaw) {
         forceLogout();
         return;
     }
     
     try {
-        // 2. Tentar ler os dados
         const currentUser = JSON.parse(currentUserRaw);
         
-        // 3. Se o objeto estiver vazio ou inválido, expulsa
         if (!currentUser || !currentUser.email) {
             throw new Error('Dados inválidos');
         }
 
-        // 4. Tudo certo, carrega a UI
+        // 2. Atualizar UI do Usuário
         updateUserInfo(currentUser);
-        initLogoutButton(); // Inicializa o botão aqui para garantir contexto
+        initLogoutButton();
+        
+        // 3. Aplicar Permissões
+        applyPermissions(currentUser);
+
+        // 4. Inicializar Gráficos apenas se estiver na aba Dash
+        if (document.getElementById('dash')?.classList.contains('active')) {
+            initCharts();
+        }
         
     } catch (e) {
         console.error('Erro de sessão:', e);
@@ -31,16 +63,61 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function applyPermissions(user) {
+    const userLevel = user.level || 'admin'; // fallback para admin se não tiver level
+    const rules = PERMISSIONS[userLevel] || PERMISSIONS.cliente; // fallback seguro
+    
+    // 1. Filtrar Menu Lateral (Nav Links)
+    const navLinks = document.querySelectorAll('.nav-link');
+    let firstAllowedTab = null;
+
+    navLinks.forEach(link => {
+        const target = link.getAttribute('data-target');
+        
+        if (rules.tabs.includes(target)) {
+            link.style.display = 'flex'; // Mostra se permitido
+            if (!firstAllowedTab) firstAllowedTab = link;
+        } else {
+            link.style.display = 'none'; // Esconde se proibido
+        }
+    });
+
+    // 2. Controlar Botão "Novo"
+    const btnNew = document.getElementById('btnNewDemand');
+    if (btnNew) {
+        if (rules.canCreateDemand) {
+            btnNew.style.display = 'block';
+        } else {
+            btnNew.style.display = 'none';
+        }
+    }
+
+    // 3. Redirecionar se estiver em aba proibida
+    // Verifica qual aba está "active" no HTML
+    const activeTabEl = document.querySelector('.tab-content.active');
+    const activeTabId = activeTabEl ? activeTabEl.id : 'dash';
+
+    if (!rules.tabs.includes(activeTabId)) {
+        // Se a aba atual não é permitida, clica na primeira permitida
+        if (firstAllowedTab) {
+            firstAllowedTab.click();
+        }
+    }
+    
+    // Ajustar Título se necessário para a aba padrão do usuário
+    if (activeTabId === 'dash' && !rules.tabs.includes('dash')) {
+         // Se carregou no dash mas não pode, a simulação de clique acima resolve,
+         // mas visualmente pode piscar. O ideal seria renderizar já certo.
+    }
+}
+
 function forceLogout() {
-    // Limpa dados críticos de sessão
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('currentUser');
-    // Redireciona para o login (ajuste o caminho conforme sua estrutura de pastas)
     window.location.replace('../login/index.html');
 }
 
 function updateUserInfo(user) {
-    // Helper para formatar nome
     const formatName = (name) => {
         if(!name) return 'Usuário';
         return name.split(' ').map(n => n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()).join(' ');
@@ -75,13 +152,13 @@ function updateUserInfo(user) {
 
 function initLogoutButton() {
     const userProfile = document.querySelector('.user-profile');
-    // Evita duplicar o botão se a função rodar 2x
     if (userProfile && !document.querySelector('.btn-logout')) {
         const logoutBtn = document.createElement('button');
         logoutBtn.className = 'btn-logout';
         logoutBtn.innerHTML = 'Sair';
         logoutBtn.style.cssText = `
             width: 100%;
+            margin-top: 12px;
             padding: 10px;
             background: rgba(244, 63, 94, 0.1);
             border: 1px solid rgba(244, 63, 94, 0.3);
@@ -113,7 +190,7 @@ function initLogoutButton() {
     }
 }
 
-// Data & Charts (Mantido igual)
+// Data & Charts
 const bars = [
     { l: 'Social', v: 13 }, 
     { l: 'Design', v: 9 }, 
@@ -171,6 +248,9 @@ navLinks.forEach(link => {
         
         if(pageTitle) pageTitle.innerText = titles[targetId];
         
+        // Inicializa gráficos se for para a aba dash
+        if (targetId === 'dash') initCharts();
+
         if (window.innerWidth <= 840 && sidebar) {
             sidebar.classList.add('hidden');
         }
@@ -192,12 +272,11 @@ if(themeBtn) {
     };
 }
 
-// Charts Initialization
-window.addEventListener('load', () => {
+// Charts Initialization Function
+function initCharts() {
     // Bar chart
     const barEl = document.getElementById('bars');
-    if (barEl) {
-        barEl.innerHTML = '';
+    if (barEl && barEl.innerHTML === '') { // Só desenha se vazio
         const max = Math.max(...bars.map(d => d.v));
 
         bars.forEach(d => {
@@ -220,7 +299,7 @@ window.addEventListener('load', () => {
     const donutEl = document.getElementById('donut');
     const legEl = document.getElementById('legend');
 
-    if (donutEl && legEl) {
+    if (donutEl && legEl && donutEl.innerHTML === '') { // Só desenha se vazio
         const w = 140, h = 140; 
         const radius = 65;
         const holeRadius = 45;
@@ -281,7 +360,7 @@ window.addEventListener('load', () => {
         donutEl.innerHTML = '';
         donutEl.appendChild(svg);
     }
-});
+}
 
 // Modal Logic
 const modal = document.getElementById('modalDemand');

@@ -26,11 +26,11 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) {
             console.error("Dados de usuário corrompidos no login. Limpando...");
-            localStorage.clear(); // Limpa tudo para permitir novo login limpo
+            localStorage.clear(); 
         }
     }
     
-    // Lembrar usuário (apenas preenche o campo, não loga automático)
+    // Lembrar usuário
     const rememberedEmail = localStorage.getItem('rememberUser');
     if (rememberedEmail) {
         const emailInput = document.getElementById('loginEmail');
@@ -84,21 +84,31 @@ if(loginForm) {
         const password = document.getElementById('loginPassword').value;
         const rememberMe = document.getElementById('rememberMe').checked;
         
-        // Buscar usuários cadastrados
+        // Buscar usuários cadastrados no localStorage
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         
-        // Verificar credenciais (ou admin hardcoded para testes)
-        const user = users.find(u => u.email === email && u.password === password);
+        // Verificar se é um usuário cadastrado manualmente
+        let user = users.find(u => u.email === email && u.password === password);
         
-        // Lógica de Admin Mock (opcional, para testes rápidos)
-        const isAdminMock = (email === 'admin@admin.com' && password === 'admin');
+        // === MOCK USERS PARA TESTE DE NÍVEIS ===
+        // Isso permite você testar sem criar contas manualmente
+        if (!user) {
+            if (email === 'admin@rsti.com' && password === 'admin') {
+                user = { name: 'Enrique Admin', email: email, level: 'admin' };
+            } else if (email === 'colab@rsti.com' && password === '123456') {
+                user = { name: 'João Colaborador', email: email, level: 'colaborador' };
+            } else if (email === 'cliente@rsti.com' && password === '123456') {
+                user = { name: 'Empresa Cliente', email: email, level: 'cliente' };
+            }
+        }
 
-        if (user || isAdminMock) {
-            const userData = user || { name: 'Administrador', email: email, level: 'admin' };
+        if (user) {
+            // Se o usuário veio do cadastro manual e não tem level, define padrão
+            if (!user.level) user.level = 'admin'; // ou 'colaborador' por padrão
 
             // Login bem-sucedido
             localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('currentUser', JSON.stringify(userData));
+            localStorage.setItem('currentUser', JSON.stringify(user));
             
             if (rememberMe) {
                 localStorage.setItem('rememberUser', email);
@@ -106,16 +116,13 @@ if(loginForm) {
                 localStorage.removeItem('rememberUser');
             }
             
-            // Animação de sucesso
-            showToast('Login realizado com sucesso! 🎉', 'success');
+            showToast(`Bem-vindo, ${user.name}! (${user.level}) 🚀`, 'success');
             
-            // Redireciona
             setTimeout(() => {
                 window.location.href = '../principal/dashboard.html';
             }, 1000);
             
         } else {
-            // Credenciais inválidas
             showToast('E-mail ou senha incorretos! ❌', 'error');
         }
     });
@@ -133,48 +140,42 @@ if(signupForm) {
         const password = document.getElementById('signupPassword').value;
         const confirmPassword = document.getElementById('signupConfirmPassword').value;
         
-        // Validar senhas
         if (password !== confirmPassword) {
             showToast('As senhas não coincidem! ❌', 'error');
             return;
         }
         
-        // Validar tamanho da senha
         if (password.length < 6) {
             showToast('A senha deve ter no mínimo 6 caracteres! ❌', 'error');
             return;
         }
         
-        // Buscar usuários existentes
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         
-        // Verificar se e-mail já existe
         if (users.some(u => u.email === email)) {
             showToast('Este e-mail já está cadastrado! ❌', 'error');
             return;
         }
         
-        // Criar novo usuário
+        // Novos cadastros entram como ADMIN por padrão neste demo
+        // Em produção, isso seria 'cliente' ou 'pendente'
         const newUser = {
             id: Date.now(),
             name: name,
             email: email,
             password: password,
+            level: 'admin', 
             createdAt: new Date().toISOString()
         };
         
-        // Salvar usuário
         users.push(newUser);
         localStorage.setItem('users', JSON.stringify(users));
         
-        // Fazer login automático
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('currentUser', JSON.stringify(newUser));
         
-        // Animação de sucesso
         showToast('Conta criada com sucesso! 🎉', 'success');
         
-        // Redireciona
         setTimeout(() => {
             window.location.href = '../principal/dashboard.html';
         }, 1000);
