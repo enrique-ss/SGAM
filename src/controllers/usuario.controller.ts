@@ -1,42 +1,8 @@
-import { Request, Response } from 'express';
-import db from '../../database/connection';
+import { db } from "../database/connection";
 
-interface Usuario {
-  id?: number;
-  nome: string;
-  email: string;
-  senha: string;
-  nivel_acesso: 'admin' | 'colaborador' | 'cliente';
-  status: 'ATIVO' | 'INATIVO';
-  data_criacao?: Date;
-}
-
-export const index = async (req: Request, res: Response): Promise<Response> => {
-  try {
-    const usuarios = await db('usuario')
-      .select('id', 'nome', 'email', 'nivel_acesso', 'status', 'data_criacao')
-      .orderBy('data_criacao', 'desc');
-    
-    return res.json(usuarios);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ erro: 'Erro ao listar usuários' });
-  }
-};
-
-export const show = async (req: Request, res: Response): Promise<Response> => {
-  try {
-    const { id } = req.params;
-    
-    const usuario = await db('usuario')
-      .select('id', 'nome', 'email', 'nivel_acesso', 'status', 'data_criacao')
-      .where({ id })
-      .first();
-    
-    if (!usuario) {
-      return res.status(404).json({ erro: 'Usuário não encontrado' });
-    }
-    
+export const criarUsuario = async (req: any, res: any) => {
+    const { nome, email, senha, telefone, nivel_acesso } = req.body;
+    const usuario = await db('usuario').insert({ nome, email, senha, telefone, nivel_acesso });
     return res.json(usuario);
   } catch (error) {
     console.error(error);
