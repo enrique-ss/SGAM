@@ -89,6 +89,25 @@ aside.hidden ~ main .btn-toggle { display: flex; }
 .metric h3 { font-size: 0.9rem; color: var(--muted); }
 .metric .val { font-size: 2.5rem; font-weight: 800; color: var(--text); }
 
+.metric .val.good { 
+    color: var(--primary); 
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+}
+
+.metric .val.warning { 
+    color: var(--warn); 
+    text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+}
+
+.metric .val.success { 
+    color: var(--success); 
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.metric .val.danger { 
+    color: var(--danger); 
+    text-shadow: 0 0 20px rgba(244, 63, 94, 0.5);
+}
 .trend { font-size: 0.8rem; padding: 6px 12px; border-radius: 20px; font-weight: 700; }
 .trend.up { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
 .trend.down { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.2); }
