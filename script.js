@@ -1,7 +1,7 @@
 const PERMS = {
     admin: { tabs: ['dash', 'clientes', 'demandas', 'entregas', 'config'], create: true, edit: true, manage: true, approve: true },
     colaborador: { tabs: ['dash', 'demandas', 'entregas', 'config'], create: true, edit: false, manage: false, approve: true },
-    cliente: { tabs: ['entregas', 'config'], create: false, edit: false, manage: false, approve: false }
+    cliente: { tabs: ['dash', 'demandas', 'entregas', 'config'], create: false, edit: false, manage: false, approve: false }
 };
 
 const MENU = [
@@ -13,11 +13,11 @@ const MENU = [
 ];
 
 const DATA = {
-    bars: [{ l: 'Social', v: 13 }, { l: 'Design', v: 9 }, { l: 'Copy', v: 5 }, { l: 'Video', v: 3 }, { l: 'SEO', v: 2 }],
+    bars: [{ l: 'Social Media', v: 3 }, { l: 'Design Gráfico', v: 1 }, { l: 'Copywriting', v: 1 }, { l: 'Conteúdo', v: 1 }, { l: 'Relatórios', v: 2 }],    
     donut: [
-        { l: 'Andamento', v: 5, c: '#6366f1' },
-        { l: 'Atrasados', v: 3, c: '#fbbf24' },
-        { l: 'Concluídos', v: 12, c: '#10b981' },
+        { l: 'Andamento', v: 6, c: '#6366f1' },
+        { l: 'Atrasados', v: 2, c: '#fbbf24' },
+        { l: 'Concluídos', v: 3, c: '#10b981' },
         { l: 'Cancelados', v: 2, c: '#f43f5e' }
     ],
     clients: [
@@ -29,29 +29,22 @@ const DATA = {
         { name: 'Restaurante Sabor', email: 'gerencia@sabor.com.br', active: true }
     ],
     demands: [
-        { id: 1, title: 'Campanha Instagram', type: 'Social Media', desc: 'Posts para feed e stories promocionais', client: 'Pet Paradise', budget: 800, delivery: '25/12/25', status: 'EM ANDAMENTO' },
-        { id: 2, title: 'Site Institucional', type: 'Design', desc: 'Desenvolvimento de site responsivo', client: 'FitLife Academia', budget: 3500, delivery: '15/01/26', status: 'EM ANDAMENTO' },
-        { id: 3, title: 'Banner Black Friday', type: 'Design', desc: 'Banners para site e redes sociais', client: 'Moda Bella', budget: 600, delivery: '20/11/25', status: 'ATRASADO' },
-        { id: 4, title: 'Textos Blog', type: 'Copywriting', desc: 'Artigos SEO para blog corporativo', client: 'TechSolutions', budget: 1200, delivery: '30/12/25', status: 'EM ANDAMENTO' },
-        { id: 5, title: 'Vídeo Lançamento', type: 'Vídeo', desc: 'Vídeo promocional para novo produto', client: 'Café Aroma', budget: 2500, delivery: '10/11/25', status: 'ATRASADO' },
-        { id: 6, title: 'Cardápio Digital', type: 'Design', desc: 'Design de cardápio digital interativo', client: 'Restaurante Sabor', budget: 900, delivery: '28/12/25', status: 'EM ANDAMENTO' },
-        { id: 7, title: 'SEO Local', type: 'SEO', desc: 'Otimização para busca local', client: 'Pet Paradise', budget: 1500, delivery: '05/01/26', status: 'EM ANDAMENTO' },
-        { id: 8, title: 'E-mail Marketing', type: 'Copywriting', desc: 'Campanha de e-mail marketing', client: 'Moda Bella', budget: 700, delivery: '18/11/25', status: 'ATRASADO' }
-    ],
+    { id: 1, title: 'Campanha Instagram - Pet Paradise', type: 'Social Media', desc: 'Posts para feed e stories promocionais do lançamento', client: 'Pet Paradise', budget: 800, delivery: '10/12/25', status: 'EM ANDAMENTO' },
+    { id: 2, title: 'Identidade Visual Completa', type: 'Design Gráfico', desc: 'Criação de logo, cartões e papelaria', client: 'FitLife Academia', budget: 3500, delivery: '12/12/25', status: 'EM ANDAMENTO' },
+    { id: 3, title: 'Textos para Site Institucional', type: 'Copywriting', desc: 'Copy para todas as páginas do novo site', client: 'Moda Bella', budget: 1200, delivery: '15/12/25', status: 'EM ANDAMENTO' },
+    { id: 4, title: 'Ebook Nutrição para Pets', type: 'Produção de Conteúdo', desc: 'Ebook com 30 páginas sobre alimentação animal', client: 'Pet Paradise', budget: 2500, delivery: '18/12/25', status: 'EM ANDAMENTO' },
+    { id: 5, title: 'Relatório Mensal de Performance', type: 'Relatórios e Estratégia', desc: 'Análise completa de métricas e KPIs', client: 'TechSolutions', budget: 1800, delivery: '20/12/25', status: 'EM ANDAMENTO' },
+    { id: 6, title: 'Posts Redes Sociais - Dezembro', type: 'Social Media', desc: 'Calendário editorial completo para dezembro', client: 'Café Aroma', budget: 950, delivery: '22/12/25', status: 'EM ANDAMENTO' },
+    { id: 7, title: 'Banner Black Friday', type: 'Social Media', desc: 'Banners para site e redes sociais', client: 'Moda Bella', budget: 600, delivery: '28/11/25', status: 'ATRASADO' },
+    { id: 8, title: 'Planejamento Estratégico 2026', type: 'Relatórios e Estratégia', desc: 'Documento estratégico para próximo ano', client: 'Restaurante Sabor', budget: 4000, delivery: '05/12/25', status: 'ATRASADO' }
+],
     deliveries: [
-        { id: 101, title: 'Logo Redesign', type: 'Design', client: 'Pet Paradise', budget: 1500, delivered: '15/11/25', status: 'CONCLUÍDO' },
-        { id: 102, title: 'Vídeo Promocional', type: 'Vídeo', client: 'FitLife Academia', budget: 2000, delivered: '20/10/25', status: 'CONCLUÍDO' },
-        { id: 103, title: 'E-commerce SEO', type: 'SEO', client: 'Moda Bella', budget: 5000, delivered: '05/12/25', status: 'CANCELADO' },
-        { id: 104, title: 'Identidade Visual', type: 'Design', client: 'Café Aroma', budget: 2800, delivered: '10/11/25', status: 'CONCLUÍDO' },
-        { id: 105, title: 'Posts Redes Sociais', type: 'Social Media', client: 'Restaurante Sabor', budget: 650, delivered: '28/10/25', status: 'CONCLUÍDO' },
-        { id: 106, title: 'Landing Page', type: 'Design', client: 'TechSolutions', budget: 1800, delivered: '15/10/25', status: 'CONCLUÍDO' },
-        { id: 107, title: 'Catálogo Digital', type: 'Design', client: 'Moda Bella', budget: 1200, delivered: '05/11/25', status: 'CONCLUÍDO' },
-        { id: 108, title: 'Fotografia Produtos', type: 'Vídeo', client: 'Pet Paradise', budget: 980, delivered: '22/10/25', status: 'CONCLUÍDO' },
-        { id: 109, title: 'Rebranding Completo', type: 'Design', client: 'FitLife Academia', budget: 4500, delivered: '30/09/25', status: 'CANCELADO' },
-        { id: 110, title: 'Campanha Natal', type: 'Social Media', client: 'Café Aroma', budget: 850, delivered: '01/12/25', status: 'CONCLUÍDO' },
-        { id: 111, title: 'Otimização Google', type: 'SEO', client: 'Restaurante Sabor', budget: 1600, delivered: '18/11/25', status: 'CONCLUÍDO' },
-        { id: 112, title: 'Anúncios Facebook', type: 'Social Media', client: 'TechSolutions', budget: 1100, delivered: '25/11/25', status: 'CONCLUÍDO' }
-    ],
+    { id: 101, title: 'Logo Redesign Completo', type: 'Design Gráfico', client: 'Pet Paradise', budget: 1500, delivered: '15/11/25', status: 'CONCLUÍDO' },
+    { id: 102, title: 'Conteúdo Blog - 10 Artigos', type: 'Produção de Conteúdo', client: 'FitLife Academia', budget: 2000, delivered: '20/11/25', status: 'CONCLUÍDO' },
+    { id: 103, title: 'Campanha Lançamento Produto', type: 'Social Media', client: 'Café Aroma', budget: 850, delivered: '01/12/25', status: 'CONCLUÍDO' },
+    { id: 104, title: 'E-commerce SEO Avançado', type: 'Relatórios e Estratégia', client: 'Moda Bella', budget: 5000, delivered: '05/12/25', status: 'CANCELADO' },
+    { id: 105, title: 'Rebranding Completo', type: 'Design Gráfico', client: 'TechSolutions', budget: 4500, delivered: '30/09/25', status: 'CANCELADO' }
+],
     users: [
         { id: 1, name: 'João Silva', email: 'joao.silva@sgam.com', role: 'admin', active: true },
         { id: 2, name: 'Maria Santos', email: 'maria.santos@sgam.com', role: 'colaborador', active: true },
@@ -395,6 +388,7 @@ function render() {
                 <div class="td">Nome</div>
                 <div class="td">Email</div>
                 <div class="td">Cargo</div>
+                <div class="td">Status</div>
             </div>
             ${DATA.users.map(u => `
                 <div class="table-row">
@@ -407,11 +401,14 @@ function render() {
                             <option value="cliente" ${u.role === 'cliente' ? 'selected' : ''}>Cliente</option>
                         </select>
                     </div>
+                    <div class="td">
+                        <span class="badge ${u.active ? 'success' : 'danger'}">${u.active ? 'ATIVO' : 'INATIVO'}</span>
+                    </div>
                 </div>
             `).join('')}
         `;
     }
-    };
+}
 
 window.completeDemand = function(id) {
     const demand = DATA.demands.find(d => d.id === id);
