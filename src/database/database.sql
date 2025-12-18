@@ -10,7 +10,6 @@ CREATE TABLE usuario (
     senha VARCHAR(255) NOT NULL, 
     nivel_acesso ENUM('admin', 'colaborador', 'cliente') NOT NULL DEFAULT 'cliente',
     status ENUM('ATIVO', 'INATIVO') NOT NULL DEFAULT 'ATIVO',
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 
 
 -- Tipos de serviço
@@ -30,7 +29,6 @@ CREATE TABLE demandas (
     prazo_entrega DATE NOT NULL,
     data_conclusao DATE NULL,
     status_servico ENUM('EM ANDAMENTO', 'ATRASADO', 'CONCLUÍDO', 'CANCELADO') NOT NULL DEFAULT 'EM ANDAMENTO',
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     FOREIGN KEY (tipo_servico_id) REFERENCES tipo_servico(id),
     FOREIGN KEY (cliente_id) REFERENCES usuario(id)
