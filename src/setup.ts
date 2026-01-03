@@ -73,11 +73,14 @@ async function setupDatabase() {
             table.increments('id').primary();
             table.integer('cliente_id').unsigned().notNullable();
             table.string('titulo', 255).notNullable();
+            table.string('tipo_servico', 100).nullable(); // NOVO
             table.text('descricao');
+            table.decimal('orcamento', 10, 2).nullable(); // NOVO
+            table.date('prazo_entrega').nullable(); // NOVO (renomeado de data_entrega)
             table.enum('status', ['aberto', 'em_andamento', 'finalizado', 'cancelado']).defaultTo('aberto');
-            table.enum('prioridade', ['baixa', 'media', 'alta', 'urgente']).defaultTo('media');
+            table.enum('prioridade', ['baixa', 'media', 'alta', 'urgente']).nullable(); // NOVO - só define quando aceitar
             table.integer('responsavel_id').unsigned().nullable();
-            table.date('data_entrega').nullable();
+            table.timestamp('data_conclusao').nullable(); // NOVO - quando finalizar/cancelar
             table.timestamp('created_at').defaultTo(db.fn.now());
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.foreign('cliente_id').references('usuarios.id').onDelete('CASCADE');

@@ -89,7 +89,7 @@ export const PedidoController = {
     },
 
     async criar(req: AuthRequest, res: Response) {
-        const { titulo, descricao, prioridade, data_entrega, cliente_id } = req.body;
+        const { titulo, tipo_servico, descricao, orcamento, prazo_entrega, cliente_id } = req.body;
         const usuarioLogado = req.user!;
 
         if (!titulo) {
@@ -118,15 +118,18 @@ export const PedidoController = {
                 clienteIdFinal = cliente_id;
             }
 
-            // REGRA: Todo pedido começa "aberto" sem responsável
+            // REGRA: Todo pedido começa "aberto" sem responsável e sem prioridade
             const [id] = await db('pedidos').insert({
                 cliente_id: clienteIdFinal,
                 titulo,
+                tipo_servico, // NOVO
                 descricao,
+                orcamento, // NOVO
+                prazo_entrega, // NOVO
                 status: 'aberto',
-                prioridade: prioridade || 'media',
-                data_entrega,
-                responsavel_id: null
+                prioridade: null, // Só define quando aceitar
+                responsavel_id: null,
+                data_conclusao: null
             });
 
             const pedido = await db('pedidos').where({ id }).first();
@@ -143,7 +146,7 @@ export const PedidoController = {
 
     async atualizar(req: AuthRequest, res: Response) {
         const { id } = req.params;
-        const { titulo, descricao, status, prioridade, responsavel_id, data_entrega } = req.body;
+        const { titulo, tipo_servico, descricao, orcamento, prazo_entrega, status, prioridade, responsavel_id } = req.body;
         const usuarioLogado = req.user!;
 
         try {
@@ -153,15 +156,15 @@ export const PedidoController = {
                 return res.status(404).json({ erro: 'Pedido não encontrado' });
             }
 
-            // REGRA: Cliente não pode alterar status/responsável
+            // REGRA: Cliente não pode alterar status/responsável/prioridade
             if (usuarioLogado.nivel_acesso === 'cliente') {
                 if (pedido.cliente_id !== usuarioLogado.id) {
                     return res.status(403).json({ erro: 'Sem permissão' });
                 }
 
-                if (status || responsavel_id !== undefined) {
+                if (status || responsavel_id !== undefined || prioridade !== undefined) {
                     return res.status(403).json({
-                        erro: 'Cliente não pode alterar status ou responsável'
+                        erro: 'Cliente não pode alterar status, responsável ou prioridade'
                     });
                 }
             }
@@ -169,11 +172,12 @@ export const PedidoController = {
             const updateData: any = { updated_at: db.fn.now() };
 
             if (titulo) updateData.titulo = titulo;
+            if (tipo_servico) updateData.tipo_servico = tipo_servico;
             if (descricao !== undefined) updateData.descricao = descricao;
-            if (prioridade) updateData.prioridade = prioridade;
-            if (data_entrega) updateData.data_entrega = data_entrega;
+            if (orcamento !== undefined) updateData.orcamento = orcamento;
+            if (prazo_entrega) updateData.prazo_entrega = prazo_entrega;
 
-            // REGRA: Apenas admin/colaborador altera status/responsável
+            // REGRA: Apenas admin/colaborador altera status/responsável/prioridade
             if (usuarioLogado.nivel_acesso !== 'cliente') {
                 if (status) {
                     const statusValidos = ['aberto', 'em_andamento', 'finalizado', 'cancelado'];
@@ -183,15 +187,39 @@ export const PedidoController = {
 
                     updateData.status = status;
 
-                    // REGRA: Ao aceitar (aberto->em_andamento), atribui responsável
+                    // REGRA: Ao aceitar (aberto->em_andamento), atribui responsável e permite definir prioridade
                     if (status === 'em_andamento' && pedido.status === 'aberto') {
                         updateData.responsavel_id = responsavel_id || usuarioLogado.id;
+                        if (prioridade) {
+                            const prioridadesValidas = ['baixa', 'media', 'alta', 'urgente'];
+                            if (!prioridadesValidas.includes(prioridade)) {
+                                return res.status(400).json({ erro: 'Prioridade inválida' });
+                            }
+                            updateData.prioridade = prioridade;
+                        }
                     }
 
-                    // REGRA: Ao recusar, remove responsável
+                    // REGRA: Ao finalizar ou cancelar, registra data de conclusão
+                    if ((status === 'finalizado' || status === 'cancelado') &&
+                        (pedido.status !== 'finalizado' && pedido.status !== 'cancelado')) {
+                        updateData.data_conclusao = db.fn.now();
+                    }
+
+                    // REGRA: Ao recusar, remove responsável e prioridade
                     if (status === 'aberto' && pedido.status === 'em_andamento') {
                         updateData.responsavel_id = null;
+                        updateData.prioridade = null;
+                        updateData.data_conclusao = null;
                     }
+                }
+
+                // REGRA: Pode alterar prioridade apenas em pedidos em andamento
+                if (prioridade !== undefined && pedido.status === 'em_andamento') {
+                    const prioridadesValidas = ['baixa', 'media', 'alta', 'urgente'];
+                    if (!prioridadesValidas.includes(prioridade)) {
+                        return res.status(400).json({ erro: 'Prioridade inválida' });
+                    }
+                    updateData.prioridade = prioridade;
                 }
 
                 if (responsavel_id !== undefined) {

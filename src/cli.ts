@@ -31,8 +31,21 @@ async function criarPedidoCliente() {
     titulo('➕ CRIAR PEDIDO', cores.verde);
     try {
         const titulo_pedido = await pergunta(colorir(`\n${emoji.pedido} Título: `, cores.ciano));
+        const tipo_servico = await pergunta(colorir(`🎯 Tipo de serviço: `, cores.ciano));
+        const orcamento = await pergunta(colorir(`💰 Orçamento (R$): `, cores.ciano));
+        const prazo_entrega = await pergunta(colorir(`📅 Prazo de entrega (YYYY-MM-DD): `, cores.ciano));
         const descricao = await pergunta(colorir(`📝 Descrição: `, cores.ciano));
-        const res = await api.post('/pedidos', { titulo: titulo_pedido, descricao });
+
+        const data: any = {
+            titulo: titulo_pedido,
+            descricao
+        };
+
+        if (tipo_servico) data.tipo_servico = tipo_servico;
+        if (orcamento) data.orcamento = parseFloat(orcamento);
+        if (prazo_entrega) data.prazo_entrega = prazo_entrega;
+
+        const res = await api.post('/pedidos', data);
         sucesso(res.data.mensagem || 'Pedido criado!');
     } catch (e: any) {
         erro(`${e.response?.data?.erro || e.message}`);
@@ -51,7 +64,13 @@ async function verMeusPedidosAbertos() {
             console.log(colorir(`\nTotal: ${res.data.total}\n`, cores.ciano));
             res.data.pedidos.forEach((p: any, i: number) => {
                 console.log(colorir(`${i + 1}. ${p.titulo}`, cores.branco + cores.bold));
-                console.log(colorir(`   ID: ${p.id} | Status: ${p.status} | Responsável: ${p.responsavel_nome || 'Aguardando'}`, cores.dim));
+                console.log(colorir(`   ID: ${p.id} | Status: ${p.status}`, cores.dim));
+                if (p.tipo_servico) console.log(colorir(`   Tipo: ${p.tipo_servico}`, cores.dim));
+                if (p.orcamento) console.log(colorir(`   Orçamento: R$ ${p.orcamento}`, cores.dim));
+                if (p.prazo_entrega) console.log(colorir(`   Prazo: ${p.prazo_entrega}`, cores.dim));
+                if (p.prioridade) console.log(colorir(`   Prioridade: ${p.prioridade}`, cores.dim));
+                console.log(colorir(`   Responsável: ${p.responsavel_nome || 'Aguardando'}`, cores.dim));
+                console.log('');
             });
         }
     } catch (e: any) {
@@ -150,13 +169,33 @@ async function verPedidosPendentes() {
             info('Nenhum pedido pendente.');
         } else {
             console.log(colorir(`\nTotal: ${res.data.total}\n`, cores.ciano));
-            console.table(res.data.pedidos.map((p: any) => ({ ID: p.id, Título: p.titulo, Cliente: p.cliente_nome })));
+            console.table(res.data.pedidos.map((p: any) => ({
+                ID: p.id,
+                Título: p.titulo,
+                Tipo: p.tipo_servico || '-',
+                Orçamento: p.orcamento ? `R$ ${p.orcamento}` : '-',
+                Prazo: p.prazo_entrega || '-',
+                Cliente: p.cliente_nome
+            })));
 
             const op = await pergunta(colorir('\n1. Aceitar | 2. Ver detalhes | 0. Voltar: ', cores.amarelo));
 
             if (op === '1') {
                 const id = await pergunta('ID: ');
-                await api.put(`/pedidos/${id}`, { status: 'em_andamento', responsavel_id: user.id });
+                const prioridade = await pergunta('Prioridade (1. Baixa | 2. Média | 3. Alta | 4. Urgente): ');
+
+                const prioridadeMap: any = {
+                    '1': 'baixa',
+                    '2': 'media',
+                    '3': 'alta',
+                    '4': 'urgente'
+                };
+
+                await api.put(`/pedidos/${id}`, {
+                    status: 'em_andamento',
+                    responsavel_id: user.id,
+                    prioridade: prioridadeMap[prioridade] || 'media'
+                });
                 sucesso('Pedido aceito!');
                 await pergunta(colorir(`\n${emoji.voltar} Enter...`, cores.dim));
             } else if (op === '2') {
