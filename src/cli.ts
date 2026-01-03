@@ -26,7 +26,6 @@ const divisor = (cor = cores.ciano) => console.log(colorir('─'.repeat(70), cor
 const caixaOpcao = (numero: string, texto: string, icone: string) => console.log(`  ${colorir(numero, cores.amarelo + cores.bold)} ${icone}  ${texto}`);
 const mostrarBanner = () => { console.log(`\n  ${cores.magenta}███████╗ ██████╗  █████╗ ███╗   ███╗${cores.reset}\n  ${cores.magenta}██╔════╝██╔════╝ ██╔══██╗████╗ ████║${cores.reset}\n  ${cores.ciano}███████╗██║  ███╗███████║██╔████╔██║${cores.reset}\n  ${cores.ciano}╚════██║██║   ██║██╔══██║██║╚██╔╝██║${cores.reset}\n  ${cores.azul}███████║╚██████╔╝██║  ██║██║ ╚═╝ ██║${cores.reset}\n  ${cores.azul}╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝${cores.reset}\n  `); console.log(colorir('    Sistema de Gerenciamento para Agências de Marketing v1.0.0', cores.dim)); };
 
-// ===== FUNÇÕES AUXILIARES =====
 // Exibe detalhes completos de um pedido
 async function exibirDetalhesPedido(id: string) {
     try {
@@ -52,7 +51,7 @@ async function exibirDetalhesPedido(id: string) {
 }
 
 // ===== FUNÇÕES CLIENTE =====
-// Cliente cria novo pedido (sem definir prioridade)
+// Cliente cria novo pedido
 async function criarPedidoCliente() {
     limpar();
     titulo('➕ CRIAR NOVO PEDIDO', cores.verde);
@@ -70,7 +69,7 @@ async function criarPedidoCliente() {
     await pergunta(colorir(`\n${emoji.voltar} Pressione Enter...`, cores.dim));
 }
 
-// Cliente visualiza seus pedidos em aberto (com detalhes expandidos)
+// Cliente visualiza seus pedidos em aberto
 async function verMeusPedidosAbertos() {
     while (true) {
         limpar();
@@ -113,7 +112,7 @@ async function verMeusPedidosAbertos() {
     }
 }
 
-// Cliente visualiza seus pedidos finalizados (com detalhes expandidos)
+// Cliente visualiza seus pedidos finalizados
 async function verMeusPedidosFinalizados() {
     while (true) {
         limpar();
@@ -227,7 +226,7 @@ async function verEditarPerfilCliente() {
 }
 
 // ===== FUNÇÕES ADMIN/COLABORADOR =====
-// Exibe dashboard com estatísticas (admin vê mais info que colaborador)
+// Exibe dashboard com estatísticas
 async function verDashboard() {
     limpar();
     titulo('📊 DASHBOARD', cores.magenta);
@@ -431,7 +430,7 @@ async function listarUsuarios() {
     await pergunta(colorir(`\n${emoji.voltar} Pressione Enter...`, cores.dim));
 }
 
-// Admin cria novo usuário (admin ou colaborador)
+// Admin cria novo usuário
 async function criarUsuario() {
     limpar();
     titulo('➕ CRIAR USUÁRIO', cores.verde);
@@ -513,11 +512,11 @@ async function atualizarUsuario() {
     await pergunta(colorir(`\n${emoji.voltar} Pressione Enter...`, cores.dim));
 }
 
-// Admin deleta um usuário (ação irreversível)
+// Admin deleta um usuário
 async function deletarUsuario() {
     limpar();
     titulo('🗑️  DELETAR USUÁRIO', cores.vermelho);
-    console.log(colorir('\n⚠️  ATENÇÃO: Esta ação não pode ser desfeita!\n', cores.vermelho + cores.bold));
+    console.log(colorir('\n⚠️ ATENÇÃO: Esta ação não pode ser desfeita!\n', cores.vermelho + cores.bold));
     try {
         const usuarios = await api.get('/usuarios');
         console.table(usuarios.data.usuarios.map((u: any) => ({
@@ -528,7 +527,7 @@ async function deletarUsuario() {
         })));
 
         const id = await pergunta(colorir(`\n🔢 ID do usuário: `, cores.ciano));
-        const confirma = await pergunta(colorir(`\n⚠️  Confirmar exclusão? (s/N): `, cores.vermelho + cores.bold));
+        const confirma = await pergunta(colorir(`\n⚠️ Confirmar exclusão? (s/N): `, cores.vermelho + cores.bold));
 
         if (confirma.toLowerCase() === 's') {
             await api.delete(`/usuarios/${id}`);
@@ -644,11 +643,11 @@ async function menuAdminColaborador() {
     }
 }
 
-// Submenu de administração (apenas admin)
+// Submenu de administração
 async function submenuAdministracao() {
     while (true) {
         limpar();
-        titulo('⚙️  ADMINISTRAÇÃO', cores.magenta);
+        titulo('⚙️ ADMINISTRAÇÃO', cores.magenta);
         console.log('');
         divisor();
         caixaOpcao('1', 'Listar usuários', emoji.usuario);
