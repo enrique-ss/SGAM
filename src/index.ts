@@ -52,7 +52,7 @@ const startServer = async () => {
       console.clear();
       console.log('🚀 SGAM ONLINE EM: http://127.0.0.1:' + PORT);
       console.log('\n👉 Admin: admin@sgam.com / Admin@123');
-      console.log('👉 CLI: npm run cli\n');
+      console.log('👉 Em outro terminal digite:\n"npm run cli" para abrir a cli.\n"npm run web" para abrir a interface web.\n');
     });
   } catch (error) {
     console.error('❌ Erro ao iniciar servidor:', error);
