@@ -216,7 +216,7 @@ PEDIDOS:
 | cliente_id     | INT           | FK, NOT NULL                  | **Conecta** com USUARIOS.id (quem criou)    |
 | responsavel_id | INT           | FK, NULL                      | **Conecta** com USUARIOS.id (quem assumiu)  |
 | titulo         | VARCHAR(255)  | NOT NULL                      | Nome do pedido (obrigatório)                |
-| tipo_servico   | VARCHAR(100)  | NOT NULL                      | Categoria Obrigatória: Design, Dev, SEO, Copywriting    
+| tipo_servico   | VARCHAR(100)  | NOT NULL                      | Categorias: Design, Dev, Story, SEO         | 
 | descricao      | TEXT          | NOT NULL                      | Texto longo obrigatório com detalhes        |
 | orcamento      | DECIMAL(10,2) | NOT NULL                      | Valor obrigatório até 99.999.999,99         |
 | prazo_entrega  | DATE          | NOT NULL                      | Data limite obrigatória (YYYY-MM-DD)        |
@@ -332,24 +332,6 @@ Pedido #1: "Criar Logo"
 - **1 usuário** pode criar **vários pedidos**
 - **1 pedido** pertence a **apenas 1 cliente**
 
-**Exemplo Prático:**
-
-```
-João (id=1) cria 3 pedidos:
-
-┌──────────────────────────────────────┐
-│ PEDIDOS                              │
-├──────┬─────────────┬─────────────────┤
-│ id   │ cliente_id  │ titulo          │
-├──────┼─────────────┼─────────────────┤
-│ 101  │     1       │ "Criar Logo"    │ 
-│ 102  │     1       │ "Fazer Site"    │ 
-│ 103  │     1       │ "Campanha Ads"  │
-└──────┴─────────────┴─────────────────┘
-
-Todos têm cliente_id = 1 (apontam para João)
-```
-
 **Regra de Deleção:** `ON DELETE CASCADE`
 
 ```
@@ -376,24 +358,6 @@ Todos têm cliente_id = 1 (apontam para João)
 - **Tipo de Relacionamento:** `1:N` (Um para Muitos)
 - **1 colaborador** pode assumir **vários pedidos**
 - **1 pedido** tem **apenas 1 responsável** (ou nenhum, quando NULL)
-
-**Exemplo Prático:**
-
-```
-Maria (id=5) assume 3 pedidos:
-
-┌───────────────────────────────────────────┐
-│ PEDIDOS                                   │
-├──────┬─────────────┬────────────────┬─────┤
-│ id   │ cliente_id  │ responsavel_id │ ... │
-├──────┼─────────────┼────────────────┼─────┤
-│ 101  │     1       │       5        │ ... │ 
-│ 104  │     2       │       5        │ ... │ 
-│ 107  │     3       │       5        │ ... │
-└──────┴─────────────┴────────────────┴─────┘
-
-Todos têm responsavel_id = 5 (apontam para Maria)
-```
 
 **Regra de Deleção:** `ON DELETE SET NULL`
 
@@ -446,10 +410,10 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 │  │  Pedidos por        │  │  Pedidos por        │     │
 │  │  tipo_servico:      │  │  status:            │     │
 │  │                     │  │                     │     │
-│  │  🎨 Design: 40%    │  │  📝 Pendente: 5     │     │
+│  │  🎨 Design: 35%    │  │  📝 Pendente: 5     │     │
 │  │  💻 Dev: 35%       │  │  🔄 Andamento: 12   │     │
-│  │  📱 Mobile: 25%     │  │  ⏰ Atrasado: 3     │     │
-│  │                     │  │  ✅ Entregue: 45   │      │
+│  │  📱 Story: 25%      │  │  ⏰ Atrasado: 3     │     │
+│  │  📈 SEO: 5%        │  │  ✅ Entregue: 45    │      │
 │  └─────────────────────┘  └─────────────────────┘     │
 │                                                       │
 │  ⚠️ AVISOS:                                           │
@@ -498,10 +462,10 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 │  │  Pedidos por        │  │  Pedidos por        │     │
 │  │  tipo_servico:      │  │  status:            │     │
 │  │                     │  │                     │     │
-│  │  🎨 Design: 40%    │  │  📝 Pendente: 5     │     │
+│  │  🎨 Design: 35%    │  │  📝 Pendente: 5     │     │
 │  │  💻 Dev: 35%       │  │  🔄 Andamento: 12   │     │
-│  │  📱 Mobile: 25%     │  │  ⏰ Atrasado: 3     │     │
-│  │                     │  │  ✅ Entregue: 45   │      │
+│  │  📱 Story: 25%      │  │  ⏰ Atrasado: 3     │     │
+│  │  📈 SEO: 5%        │  │  ✅ Entregue: 45   │      │
 │  └─────────────────────┘  └─────────────────────┘     │
 │                                                       │
 │  ⚠️ AVISOS PESSOAIS:                                  │
@@ -558,11 +522,11 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 📋 COLABORADOR MARIA ESTÁ NA TELA "PEDIDOS PENDENTES":
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-| Título: Logo Pet Shop | Tipo: Logo | Descrição: Fazer uma logo... | Orçamento: 100 | Prazo: 02/12/26 | Cliente: João │
-│     [ Assumir ]                                                                                                      │
+| ID: 41 | Título: Logo Pet Shop | Tipo: Logo | Descrição: Fazer uma logo... | Orçamento: 100 | Prazo: 02/12/26 | Cliente: João │
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+1. Assumir -> Digite o ID do pedido
 
-👆 Maria clica "Assumir"
+👆 Maria digita o ID do pedido que deseja assumir.
 
 ↓
 
@@ -578,8 +542,8 @@ DEPOIS:
   └─► atualizado_em = 2026-01-04 15:00:00 ← Timestamp
 
 📋 RESULTADO:
-  • Pedido SAI da lista "Pedidos Pendentes"
-  • Pedido APARECE em "Meus Pedidos" da Maria
+  • Pedido sai da lista "Pedidos Pendentes"
+  • Pedido aparece em "Meus Pedidos" da Maria
   • João vê o pedido com status "em andamento" em "Meus Pedidos"
 ```
 
@@ -588,10 +552,13 @@ DEPOIS:
 ```
 🔄 MARIA ESTÁ EM "MEUS PEDIDOS (EM ABERTO)":
 
-┌────────────────────────────────────────────────┐
-│ #42 | Logo Cliente X | Em Andamento | Alta    │
-│     [ Concluir ]  [ Cancelar ]                 │
-└────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+| Título: Logo Pet Shop | Tipo: Logo | Descrição: Fazer uma logo... | Orçamento: 100 | Prazo: 02/12/26 | Cliente: João │
+│ Status: Em andamento | Prioridade: Alta                                                                              │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+1. Concluir
+2. Cancelar
+0. Voltar
 
 👆 Maria clica "Concluir"
 
@@ -604,17 +571,15 @@ ANTES:
   └─► data_conclusao = NULL
 
 DEPOIS:
-  ├─► status = 'entregue'                       ← Mudou!
+  ├─► status = 'entregue'                       ← Mudou
   ├─► data_conclusao = 2026-01-10 16:45:00      ← Timestamp do servidor
   └─► atualizado_em = 2026-01-10 16:45:00       ← Timestamp
 
 📋 RESULTADO:
-  • Pedido #42 SAI de "Meus Pedidos (Em Aberto)" da Maria
-  • Pedido #42 APARECE em "Finalizados" da Maria
+  • Pedido sai de "Meus Pedidos (Em Aberto)" da Maria
+  • Pedido apareceE em "Finalizados" da Maria
   • João vê o pedido em "Minhas Entregas" com status "entregue"
 ```
-
----
 
 #### **❌ Ação: "CANCELAR" Pedido**
 
@@ -622,7 +587,7 @@ DEPOIS:
 Funciona igual ao "Concluir", mas:
 
 💾 BANCO ATUALIZA:
-  ├─► status = 'cancelado'                      ← Diferente!
+  ├─► status = 'cancelado'                      ← Mudou
   ├─► data_conclusao = 2026-01-10 17:00:00      ← Timestamp do servidor
   └─► atualizado_em = 2026-01-10 17:00:00       ← Timestamp
 
@@ -632,17 +597,7 @@ Funciona igual ao "Concluir", mas:
   • Cliente vê em "Minhas Entregas" com status "cancelado"
 ```
 
----
-
-
-
----
-
-
-
----
-
-#### **👥 Gestão de Usuários:**
+#### PASSO 7: **👥 Gestão de Usuários:**
 
 ```
 🔐 TELA "GESTÃO DE CLIENTES":
@@ -654,27 +609,28 @@ Funciona igual ao "Concluir", mas:
 │ 2   │ Maria Santos  │ maria@email.com    │  ✅   │ Cliente  │
 │ 3   │ Pedro Costa   │ pedro@email.com    │  ❌   │ Cliente  │
 └─────┴───────────────┴────────────────────┴───────┴──────────┘
-         [ Editar ]       [ Editar ]         [ Editar ]
+1. Editar -> Digite o ID do Usuário:
+0. Voltar -> Volta pro menu anterior
 
-👆 Admin clica "Editar" em Pedro Costa
+👆 Admin digita 1 e depois digita o ID correspondente ao "Pedro Costa"
 
 ↓
 
-📝 POPUP APARECE:
+📝 Menu aparece:
 
 ┌────────────────────────────────────────┐
 │ Editar Usuário: Pedro Costa            │
 ├────────────────────────────────────────┤
 │ Status:                                │
-│   ● Ativo                              │
-│   ○ Inativo                            │
+│ 1. Ativo                               │
+│ 2. Inativo                             │
+│ 0. Manter                              │
 │                                        │
 │ Nível de Acesso:                       │
-│   ● Cliente                            │
-│   ○ Colaborador                        │
-│   ○ Administrador                      │
-│                                        │
-│     [ Cancelar ]  [ Salvar ]           │
+│ 1. Cliente                             │
+│ 2. Colaborador                         |
+| 3. Administrador                       │
+│ 0. Manter                              │
 └────────────────────────────────────────┘
 ```
 
@@ -700,893 +656,3 @@ Funciona igual ao "Concluir", mas:
    └─► Sistema deve avisar: "Este usuário tem X pedidos em aberto"
    └─► Admin decide se realmente quer desativar
 ```
-
----
-
-#### **📊 Dashboard Admin (Visão Completa):**
-
-```
-┌───────────────────────────────────────────────────────────┐
-│                  📊 DASHBOARD ADMIN                       │
-├───────────────────────────────────────────────────────────┤
-│                                                           │
-│  👤 MEUS PEDIDOS (PESSOAL):                               │
-│  ┌─────────────────────────────────────────────┐         │
-│  │ 🔄 Em Aberto: 4 pedidos                     │         │
-│  │ ⏰ Atrasados: 1 pedido                      │         │
-│  │ 📅 Próximas Entregas (7 dias): 2 pedidos   │         │
-│  └─────────────────────────────────────────────┘         │
-│                                                           │
-│  📅 MEUS PRÓXIMOS PRAZOS:                                 │
-│  ┌───────────────────────────────────────────────┐       │
-│  │ 🔴 #15 - Site Cliente A    | 05/01 | Urgente  │       │
-│  │ 🟠 #23 - Logo Cliente B    | 07/01 | Alta     │       │
-│  └───────────────────────────────────────────────┘       │
-│                                                           │
-│  ─────────────────────────────────────────────────────── │
-│                                                           │
-│  📈 ESTATÍSTICAS GLOBAIS DA EQUIPE:                       │
-│  ┌─────────────────────────────────────────────┐         │
-│  │ 📊 Total de Pedidos: 65                     │         │
-│  │ ✅ Taxa de Conclusão: 85%                   │         │
-│  │ ⏰ Tempo Médio de Entrega: 7 dias           │         │
-│  │ 🚨 Pedidos Atrasados: 3                     │         │
-│  └─────────────────────────────────────────────┘         │
-│                                                           │
-│  👥 VISÃO POR RESPONSÁVEL:                                │
-│  ┌───────────────────────────────────────────────┐       │
-│  │ Carlos (Admin) | Em Aberto: 4  | Atrasados: 1 │       │
-│  │ Maria Silva    | Em Aberto: 5  | Atrasados: 1 │       │
-│  │ João Costa     | Em Aberto: 3  | Atrasados: 0 │       │
-│  │ Ana Oliveira   | Em Aberto: 7  | Atrasados: 2 │       │
-│  └───────────────────────────────────────────────┘       │
-│                                                           │
-│  ⚠️ ALERTAS DO SISTEMA:                                   │
-│  ┌───────────────────────────────────────────────┐       │
-│  │ 🟡 Pedro Santos - 25 dias sem login           │       │
-│  │ 🔴 Carlos Lima - 32 dias sem login (INATIVO)  │       │
-│  └───────────────────────────────────────────────┘       │
-│                                                           │
-│  📊 GRÁFICOS E ESTATÍSTICAS:                              │
-│  [Gráficos de pizza e barras como no dashboard do        │
-│   colaborador, mostrando distribuição de tipos de        │
-│   serviço e status dos pedidos]                          │
-│                                                           │
-└───────────────────────────────────────────────────────────┘
-
-💡 CONCEITO:
-O Admin tem DUAS VISÕES no dashboard:
-  1. VISÃO PESSOAL (topo): Seus próprios pedidos como colaborador
-  2. VISÃO GLOBAL (meio/baixo): Estatísticas de toda a equipe
-
-Isso permite que o Admin:
-  ✅ Trabalhe nos próprios pedidos (como colaborador)
-  ✅ Monitore o desempenho da equipe toda
-  ✅ Identifique gargalos e problemas rapidamente
-```
-
----
-
-
-
----
-
-## 🔄 PASSO 6: WORKFLOW COMPLETO DE UM PEDIDO
-
-Vamos acompanhar o **ciclo de vida completo** de um pedido, do início ao fim.
-
----
-
-### **📖 Cenário 1: Cliente cria pedido (fluxo normal)**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ PASSO 1: CRIAÇÃO                                            │
-└─────────────────────────────────────────────────────────────┘
-
-👤 João (id=3, cliente) faz login
-    ↓
-📝 Vai em "Meus Pedidos" → clica "Novo Pedido"
-    ↓
-✍️ Preenche formulário:
-    • Título: "Criação de Logo"
-    • Tipo: "Design"
-    • Descrição: "Logo moderna para empresa de tecnologia"
-    • Orçamento: R$ 2.500,00
-    • Prazo: 2026-01-20
-    • Prioridade: "alta"
-    ↓
-💾 BANCO DE DADOS recebe INSERT:
-
-INSERT INTO PEDIDOS (
-  cliente_id,
-  responsavel_id,
-  titulo,
-  tipo_servico,
-  descricao,
-  orcamento,
-  prazo_entrega,
-  prioridade,
-  status,
-  criado_em
-) VALUES (
-  3,                          ← ID do João (automático)
-  NULL,                       ← Ainda não foi assumido
-  'Criação de Logo',
-  'Design',
-  'Logo moderna para empresa de tecnologia',
-  2500.00,
-  '2026-01-20',
-  'alta',
-  'pendente',                 ← Status inicial (automático)
-  '2026-01-04 14:30:00'       ← Timestamp (automático)
-);
-
-↓
-
-📋 PEDIDO #42 FOI CRIADO!
-    • João vê em "Meus Pedidos" com status "pendente"
-    • Todos os colaboradores veem em "Pedidos Pendentes"
-
-
-┌─────────────────────────────────────────────────────────────┐
-│ PASSO 2: ASSUMINDO O PEDIDO                                 │
-└─────────────────────────────────────────────────────────────┘
-
-👨‍💼 Maria (id=5, colaboradora) faz login
-    ↓
-👀 Vai em "Pedidos Pendentes"
-    ↓
-📋 Vê o pedido #42 "Criação de Logo" criado por João
-    ↓
-🎯 Clica "Assumir"
-    ↓
-💾 BANCO DE DADOS recebe UPDATE:
-
-UPDATE PEDIDOS
-SET
-  responsavel_id = 5,          ← ID da Maria
-  status = 'em_andamento',     ← Mudou de 'pendente'
-  atualizado_em = '2026-01-04 15:00:00'
-WHERE id = 42;
-
-↓
-
-📋 RESULTADO:
-    • Pedido #42 SAI da lista "Pedidos Pendentes"
-    • Maria vê em "Meus Pedidos (Em Aberto)"
-    • João vê status mudou para "em andamento"
-
-
-┌─────────────────────────────────────────────────────────────┐
-│ PASSO 3: TRABALHANDO NO PEDIDO                              │
-└─────────────────────────────────────────────────────────────┘
-
-[Maria trabalha na logo durante 6 dias...]
-
-📅 Dia 2026-01-05: Tudo bem, dentro do prazo
-📅 Dia 2026-01-10: Logo ficou pronta!
-
-
-┌─────────────────────────────────────────────────────────────┐
-│ PASSO 4: CONCLUINDO O PEDIDO                                │
-└─────────────────────────────────────────────────────────────┘
-
-👨‍💼 Maria vai em "Meus Pedidos (Em Aberto)"
-    ↓
-✅ Clica "Concluir" no pedido #42
-    ↓
-💾 BANCO DE DADOS recebe UPDATE:
-
-UPDATE PEDIDOS
-SET
-  status = 'entregue',                   ← Finalizado!
-  data_conclusao = '2026-01-10 16:45:00', ← Timestamp do servidor
-  atualizado_em = '2026-01-10 16:45:00'
-WHERE id = 42;
-
-↓
-
-📋 RESULTADO FINAL:
-    • Maria vê em "Finalizados" com status "entregue"
-    • João vê em "Minhas Entregas" com status "entregue"
-    • Pedido concluído em 6 dias (dentro do prazo ✅)
-```
-
----
-
-### **📖 Cenário 2: Pedido atrasa (fluxo com problema)**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ SITUAÇÃO INICIAL                                            │
-└─────────────────────────────────────────────────────────────┘
-
-📋 Pedido #55:
-  ├─► cliente_id = 8 (Ana)
-  ├─► responsavel_id = 5 (Maria)
-  ├─► titulo = "Desenvolvimento de Site"
-  ├─► status = 'em_andamento'
-  ├─► prazo_entrega = '2026-01-05'
-  └─► prioridade = 'alta'
-
-
-┌─────────────────────────────────────────────────────────────┐
-│ DIA 2026-01-06 às 00:00 - JOB AUTOMÁTICO RODA              │
-└─────────────────────────────────────────────────────────────┘
-
-🤖 SISTEMA VERIFICA TODOS OS PEDIDOS:
-
-Para pedido #55:
-  └─► status == 'em_andamento'? ✅ SIM
-  └─► Data Atual (06) > prazo_entrega (05)? ✅ SIM
-
-↓
-
-💾 BANCO DE DADOS recebe UPDATE:
-
-UPDATE PEDIDOS
-SET
-  status = 'atrasado',                   ← Mudou automaticamente!
-  atualizado_em = '2026-01-06 00:00:01'
-WHERE id = 55;
-
-↓
-
-📋 RESULTADO:
-  • Status mudou de 'em_andamento' para 'atrasado'
-  • Pedido aparece em VERMELHO no Dashboard de Maria
-  • Pedido aparece em "Urgentes" no Dashboard
-  • Ana (cliente) vê status "atrasado" em "Meus Pedidos"
-
-
-┌─────────────────────────────────────────────────────────────┐
-│ DIA 2026-01-08 - MARIA TERMINA O TRABALHO                  │
-└─────────────────────────────────────────────────────────────┘
-
-👨‍💼 Maria clica "Concluir" no pedido #55
-    ↓
-💾 BANCO DE DADOS recebe UPDATE:
-
-UPDATE PEDIDOS
-SET
-  status = 'entregue',                   ← Entregue com atraso!
-  data_conclusao = '2026-01-08 10:30:00',
-  atualizado_em = '2026-01-08 10:30:00'
-WHERE id = 55;
-
-↓
-
-📋 RESULTADO FINAL:
-  • Pedido foi concluído 3 dias APÓS o prazo (08 - 05 = 3)
-  • Maria vê em "Finalizados"
-  • Ana vê em "Minhas Entregas" com data de conclusão
-  • Admin pode analisar: entregue, mas atrasado
-```
-
----
-
-### **📖 Cenário 3: Colaborador cria pedido (WhatsApp)**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ CRIAÇÃO POR COLABORADOR (Pedido externo)                   │
-└─────────────────────────────────────────────────────────────┘
-
-📱 CONTEXTO:
-  • Cliente ligou no WhatsApp pedindo um serviço
-  • Colaborador Maria quer registrar no sistema
-
-👨‍💼 Maria (id=5, colaboradora) faz login
-    ↓
-📝 Vai em "Pedidos Pendentes" → clica "Novo Pedido"
-    ↓
-🔽 FORMULÁRIO COMPLETO:
-
-┌───────────────────────────────────────┐
-│ Cliente:      [João Silva ▼     ] ✅ │ ← Dropdown de clientes
-│ Título:       [Manutenção Site  ] ✅ │
-│ Tipo Serviço: [Desenvolvimento  ] ✅ │
-│ Descrição:    [Correção bugs... ] ✅ │
-│ Orçamento:    [R$ 1.500,00      ] ✅ │
-│ Prazo:        [2026-01-10       ] ✅ │
-│ Prioridade:   [Urgente ▼        ] ✅ │
-└───────────────────────────────────────┘
-
-✍️ Maria preenche:
-    • Cliente: João Silva (id=3)
-    • Título: "Manutenção Site"
-    • Tipo: "Desenvolvimento"
-    • Descrição: "Correção de bugs no checkout"
-    • Orçamento: R$ 1.500,00
-    • Prazo: 2026-01-10
-    • Prioridade: "urgente"
-    ↓
-💾 BANCO DE DADOS recebe INSERT:
-
-INSERT INTO PEDIDOS (
-  cliente_id,
-  responsavel_id,
-  titulo,
-  tipo_servico,
-  descricao,
-  orcamento,
-  prazo_entrega,
-  prioridade,
-  status,
-  criado_em
-) VALUES (
-  3,                          ← João (selecionado pela Maria)
-  5,                          ← ID da Maria (automático!)
-  'Manutenção Site',
-  'Desenvolvimento',
-  'Correção de bugs no checkout',
-  1500.00,
-  '2026-01-10',
-  'urgente',
-  'em_andamento',             ← JÁ COMEÇA EM ANDAMENTO!
-  '2026-01-04 10:00:00'
-);
-
-↓
-
-📋 RESULTADO:
-  • Pedido #67 criado
-  • Maria JÁ É A RESPONSÁVEL (não precisa assumir)
-  • Pedido JÁ ESTÁ "em andamento"
-  • João vê em "Meus Pedidos" com status "em andamento"
-  • Pedido NÃO aparece em "Pedidos Pendentes" (já foi assumido)
-  
-🎯 VANTAGEM:
-  • Pedidos externos entram direto no fluxo de trabalho
-  • Colaborador que registrou já se torna responsável
-  • Centraliza TODOS os pedidos em um único sistema
-```
-
----
-
-## 🛡️ PASSO 7: VALIDAÇÕES E REGRAS DE SEGURANÇA
-
-Agora vamos ver **todas as validações** que o sistema deve fazer.
-
----
-
-### **🔐 Validações no Banco de Dados (SQL):**
-
-```sql
--- 1. Email único (não pode repetir)
-CREATE UNIQUE INDEX idx_email ON USUARIOS(email);
-
--- 2. Foreign Keys com regras de deleção
-ALTER TABLE PEDIDOS
-  ADD CONSTRAINT fk_cliente
-    FOREIGN KEY (cliente_id)
-    REFERENCES USUARIOS(id)
-    ON DELETE CASCADE;           ← Deleta pedidos se deletar cliente
-
-ALTER TABLE PEDIDOS
-  ADD CONSTRAINT fk_responsavel
-    FOREIGN KEY (responsavel_id)
-    REFERENCES USUARIOS(id)
-    ON DELETE SET NULL;          ← Apenas remove responsável
-
--- 3. Valores válidos de ENUM
-ALTER TABLE USUARIOS
-  ADD CONSTRAINT check_nivel
-    CHECK (nivel_acesso IN ('admin', 'colaborador', 'cliente'));
-
-ALTER TABLE PEDIDOS
-  ADD CONSTRAINT check_status
-    CHECK (status IN ('pendente', 'em_andamento', 'atrasado', 'entregue', 'cancelado'));
-
-ALTER TABLE PEDIDOS
-  ADD CONSTRAINT check_prioridade
-    CHECK (prioridade IN ('baixa', 'media', 'alta', 'urgente'));
-
--- 4. Orçamento positivo
-ALTER TABLE PEDIDOS
-  ADD CONSTRAINT check_orcamento
-    CHECK (orcamento > 0);
-```
-
----
-
-### **✅ Validações na Aplicação (Backend):**
-
-```javascript
-// 1. Ao criar pedido (qualquer usuário)
-function validarCriacaoPedido(dados) {
-  // Campos obrigatórios
-  if (!dados.titulo || dados.titulo.trim() === '') {
-    throw new Error('Título é obrigatório');
-  }
-  
-  if (!dados.tipo_servico) {
-    throw new Error('Tipo de serviço é obrigatório');
-  }
-  
-  if (!dados.descricao || dados.descricao.trim() === '') {
-    throw new Error('Descrição é obrigatória');
-  }
-  
-  if (!dados.orcamento || dados.orcamento <= 0) {
-    throw new Error('Orçamento deve ser maior que zero');
-  }
-  
-  if (!dados.prazo_entrega) {
-    throw new Error('Prazo de entrega é obrigatório');
-  }
-  
-  if (!dados.prioridade) {
-    throw new Error('Prioridade é obrigatória');
-  }
-  
-  // Prazo deve ser data futura
-  const prazo = new Date(dados.prazo_entrega);
-  const hoje = new Date();
-  
-  if (prazo < hoje) {
-    throw new Error('Prazo de entrega deve ser uma data futura');
-  }
-  
-  return true;
-}
-
-// 2. Ao editar pedido (verificar permissões)
-function validarEdicaoPedido(usuario, pedido, alteracoes) {
-  // Cliente só pode editar seus próprios pedidos
-  if (usuario.nivel_acesso === 'cliente') {
-    if (pedido.cliente_id !== usuario.id) {
-      throw new Error('Você não tem permissão para editar este pedido');
-    }
-    
-    // Cliente não pode alterar status ou responsável
-    if (alteracoes.status || alteracoes.responsavel_id) {
-      throw new Error('Você não pode alterar estes campos');
-    }
-  }
-  
-  // Colaborador só pode editar pedidos que assumiu
-  if (usuario.nivel_acesso === 'colaborador') {
-    if (pedido.responsavel_id !== usuario.id) {
-      throw new Error('Você só pode editar pedidos que assumiu');
-    }
-  }
-  
-  // Admin pode editar qualquer coisa
-  return true;
-}
-
-// 3. Ao assumir pedido
-function validarAssumirPedido(usuario, pedido) {
-  // Apenas colaboradores podem assumir
-  if (usuario.nivel_acesso !== 'colaborador' && usuario.nivel_acesso !== 'admin') {
-    throw new Error('Apenas colaboradores podem assumir pedidos');
-  }
-  
-  // Pedido deve estar pendente
-  if (pedido.status !== 'pendente') {
-    throw new Error('Este pedido já foi assumido');
-  }
-  
-  return true;
-}
-
-// 4. Ao concluir pedido
-function validarConcluirPedido(usuario, pedido) {
-  // Deve ser o responsável
-  if (pedido.responsavel_id !== usuario.id && usuario.nivel_acesso !== 'admin') {
-    throw new Error('Apenas o responsável pode concluir este pedido');
-  }
-  
-  // Pedido deve estar em andamento ou atrasado
-  if (pedido.status !== 'em_andamento' && pedido.status !== 'atrasado') {
-    throw new Error('Este pedido não pode ser concluído no estado atual');
-  }
-  
-  return true;
-}
-
-// 5. Ao cancelar pedido
-function validarCancelarPedido(usuario, pedido) {
-  // Cliente pode cancelar seus próprios pedidos
-  if (usuario.nivel_acesso === 'cliente' && pedido.cliente_id !== usuario.id) {
-    throw new Error('Você só pode cancelar seus próprios pedidos');
-  }
-  
-  // Não pode cancelar pedidos já finalizados
-  if (pedido.status === 'entregue' || pedido.status === 'cancelado') {
-    throw new Error('Este pedido já foi finalizado');
-  }
-  
-  return true;
-}
-```
-
----
-
-## 📊 PASSO 8: QUERIES SQL IMPORTANTES
-
-Consultas SQL que você vai usar frequentemente no sistema.
-
----
-
-### **1️⃣ Listar Pedidos Pendentes (Para Colaboradores)**
-
-```sql
--- Mostra todos os pedidos esperando ser assumidos
-SELECT 
-  p.id,
-  p.titulo,
-  p.tipo_servico,
-  p.prioridade,
-  p.prazo_entrega,
-  u.nome AS cliente_nome,
-  p.criado_em
-FROM PEDIDOS p
-INNER JOIN USUARIOS u ON p.cliente_id = u.id
-WHERE p.status = 'pendente'
-ORDER BY 
-  FIELD(p.prioridade, 'urgente', 'alta', 'media', 'baixa'),
-  p.prazo_entrega ASC;
-```
-
----
-
-### **2️⃣ Listar Meus Pedidos Em Aberto (Para Colaborador)**
-
-```sql
--- Mostra pedidos que o colaborador assumiu e ainda não finalizou
-SELECT 
-  p.id,
-  p.titulo,
-  p.tipo_servico,
-  p.status,
-  p.prioridade,
-  p.prazo_entrega,
-  u.nome AS cliente_nome,
-  DATEDIFF(p.prazo_entrega, CURDATE()) AS dias_restantes
-FROM PEDIDOS p
-INNER JOIN USUARIOS u ON p.cliente_id = u.id
-WHERE p.responsavel_id = ? -- ID do colaborador logado
-  AND p.status IN ('em_andamento', 'atrasado')
-ORDER BY 
-  p.status = 'atrasado' DESC,
-  p.prazo_entrega ASC;
-```
-
----
-
-### **3️⃣ Listar Meus Pedidos (Para Cliente)**
-
-```sql
--- Mostra pedidos do cliente que ainda não foram concluídos
-SELECT 
-  p.id,
-  p.titulo,
-  p.tipo_servico,
-  p.status,
-  p.prioridade,
-  p.prazo_entrega,
-  u.nome AS responsavel_nome,
-  p.criado_em
-FROM PEDIDOS p
-LEFT JOIN USUARIOS u ON p.responsavel_id = u.id
-WHERE p.cliente_id = ? -- ID do cliente logado
-  AND p.status IN ('pendente', 'em_andamento', 'atrasado')
-ORDER BY p.criado_em DESC;
-```
-
----
-
-### **4️⃣ Dashboard - Estatísticas Globais (Para Admin)**
-
-```sql
--- Total de pedidos por status
-SELECT 
-  status,
-  COUNT(*) AS total
-FROM PEDIDOS
-GROUP BY status;
-
--- Taxa de conclusão
-SELECT 
-  ROUND((COUNT(CASE WHEN status = 'entregue' THEN 1 END) * 100.0 / COUNT(*)), 2) AS taxa_conclusao
-FROM PEDIDOS;
-
--- Tempo médio de entrega (em dias)
-SELECT 
-  ROUND(AVG(DATEDIFF(data_conclusao, criado_em)), 1) AS tempo_medio_dias
-FROM PEDIDOS
-WHERE status = 'entregue';
-
--- Pedidos atrasados
-SELECT COUNT(*) AS total_atrasados
-FROM PEDIDOS
-WHERE status = 'atrasado';
-```
-
----
-
-### **5️⃣ Dashboard - Pedidos por Responsável (Para Admin)**
-
-```sql
--- Visão geral da carga de trabalho de cada colaborador (INCLUINDO O PRÓPRIO ADMIN)
-SELECT 
-  u.id,
-  u.nome,
-  u.nivel_acesso,
-  COUNT(CASE WHEN p.status IN ('em_andamento', 'atrasado') THEN 1 END) AS em_aberto,
-  COUNT(CASE WHEN p.status = 'atrasado' THEN 1 END) AS atrasados,
-  COUNT(CASE WHEN p.status = 'entregue' THEN 1 END) AS concluidos
-FROM USUARIOS u
-LEFT JOIN PEDIDOS p ON u.id = p.responsavel_id
-WHERE u.nivel_acesso IN ('colaborador', 'admin')
-  AND u.ativo = true
-GROUP BY u.id, u.nome, u.nivel_acesso
-ORDER BY em_aberto DESC;
-```
-
----
-
-### **5.1️⃣ Dashboard - Meus Pedidos Pessoais (Para Admin)**
-
-```sql
--- Estatísticas pessoais do admin (como colaborador)
-SELECT 
-  COUNT(CASE WHEN status IN ('em_andamento', 'atrasado') THEN 1 END) AS meus_em_aberto,
-  COUNT(CASE WHEN status = 'atrasado' THEN 1 END) AS meus_atrasados,
-  COUNT(CASE WHEN status = 'entregue' THEN 1 END) AS meus_concluidos,
-  COUNT(CASE WHEN status IN ('em_andamento', 'atrasado') 
-             AND prazo_entrega BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
-             THEN 1 END) AS proximas_entregas_7dias
-FROM PEDIDOS
-WHERE responsavel_id = ?; -- ID do admin logado
-
--- Próximos prazos do admin (7 dias)
-SELECT 
-  p.id,
-  p.titulo,
-  p.prioridade,
-  p.prazo_entrega,
-  u.nome AS cliente_nome,
-  DATEDIFF(p.prazo_entrega, CURDATE()) AS dias_restantes
-FROM PEDIDOS p
-INNER JOIN USUARIOS u ON p.cliente_id = u.id
-WHERE p.responsavel_id = ? -- ID do admin logado
-  AND p.status IN ('em_andamento', 'atrasado')
-  AND p.prazo_entrega BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-ORDER BY p.prazo_entrega ASC;
-```
-
----
-
-### **6️⃣ Atualizar Pedidos Atrasados (Job Automático)**
-
-```sql
--- Roda diariamente para marcar pedidos atrasados
-UPDATE PEDIDOS
-SET 
-  status = 'atrasado',
-  atualizado_em = CURRENT_TIMESTAMP
-WHERE status = 'em_andamento'
-  AND prazo_entrega < CURDATE();
-```
-
----
-
-### **7️⃣ Desativar Colaboradores Inativos (Job Automático)**
-
-```sql
--- Roda diariamente para desativar colaboradores sem login há 30+ dias
-UPDATE USUARIOS
-SET 
-  ativo = false,
-  atualizado_em = CURRENT_TIMESTAMP
-WHERE nivel_acesso = 'colaborador'
-  AND ultimo_login < DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-  AND ativo = true;
-```
-
----
-
-### **8️⃣ Buscar Pedidos (Filtro Genérico)**
-
-```sql
--- Busca com múltiplos filtros
-SELECT 
-  p.id,
-  p.titulo,
-  p.tipo_servico,
-  p.status,
-  p.prioridade,
-  p.prazo_entrega,
-  c.nome AS cliente_nome,
-  r.nome AS responsavel_nome
-FROM PEDIDOS p
-INNER JOIN USUARIOS c ON p.cliente_id = c.id
-LEFT JOIN USUARIOS r ON p.responsavel_id = r.id
-WHERE 1=1
-  -- Filtros opcionais (aplicar conforme necessário)
-  AND (? IS NULL OR p.status = ?)
-  AND (? IS NULL OR p.prioridade = ?)
-  AND (? IS NULL OR p.tipo_servico = ?)
-  AND (? IS NULL OR p.cliente_id = ?)
-  AND (? IS NULL OR p.responsavel_id = ?)
-ORDER BY p.criado_em DESC;
-```
-
----
-
-## 🎨 PASSO 9: ESTRUTURA DE CÓDIGO SQL COMPLETA
-
-Script SQL completo para criar o banco de dados do zero.
-
----
-
-```sql
--- ============================================
--- SGAM - Sistema de Gerenciamento de Agência
--- Script de Criação do Banco de Dados
--- ============================================
-
--- Criar banco de dados
-CREATE DATABASE IF NOT EXISTS sgam_db
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
-
-USE sgam_db;
-
--- ============================================
--- TABELA: USUARIOS
--- ============================================
-
-CREATE TABLE USUARIOS (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  nome VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  senha VARCHAR(255) NOT NULL,
-  nivel_acesso ENUM('admin', 'colaborador', 'cliente') DEFAULT 'cliente',
-  ativo BOOLEAN DEFAULT true,
-  ultimo_login TIMESTAMP NULL,
-  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
-  -- Índices para melhor performance
-  INDEX idx_nivel_acesso (nivel_acesso),
-  INDEX idx_ativo (ativo),
-  INDEX idx_email (email)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- TABELA: PEDIDOS
--- ============================================
-
-CREATE TABLE PEDIDOS (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  cliente_id INT NOT NULL,
-  responsavel_id INT NULL,
-  titulo VARCHAR(255) NOT NULL,
-  tipo_servico VARCHAR(100) NOT NULL,
-  descricao TEXT NOT NULL,
-  orcamento DECIMAL(10,2) NOT NULL,
-  prazo_entrega DATE NOT NULL,
-  status ENUM('pendente', 'em_andamento', 'atrasado', 'entregue', 'cancelado') DEFAULT 'pendente',
-  prioridade ENUM('baixa', 'media', 'alta', 'urgente') NOT NULL,
-  data_conclusao TIMESTAMP NULL,
-  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
-  -- Foreign Keys
-  CONSTRAINT fk_cliente 
-    FOREIGN KEY (cliente_id) 
-    REFERENCES USUARIOS(id) 
-    ON DELETE CASCADE,
-    
-  CONSTRAINT fk_responsavel 
-    FOREIGN KEY (responsavel_id) 
-    REFERENCES USUARIOS(id) 
-    ON DELETE SET NULL,
-  
-  -- Constraints
-  CONSTRAINT check_orcamento CHECK (orcamento > 0),
-  
-  -- Índices para melhor performance
-  INDEX idx_cliente (cliente_id),
-  INDEX idx_responsavel (responsavel_id),
-  INDEX idx_status (status),
-  INDEX idx_prioridade (prioridade),
-  INDEX idx_prazo (prazo_entrega),
-  INDEX idx_tipo_servico (tipo_servico)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================
--- DADOS INICIAIS (SEED)
--- ============================================
-
--- Inserir usuário admin padrão
--- Senha: admin123 (hash bcrypt)
-INSERT INTO USUARIOS (nome, email, senha, nivel_acesso) VALUES
-('Administrador', 'admin@sgam.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin');
-
--- Inserir alguns usuários de exemplo
-INSERT INTO USUARIOS (nome, email, senha, nivel_acesso) VALUES
-('Maria Silva', 'maria@sgam.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'colaborador'),
-('João Costa', 'joao@sgam.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'colaborador'),
-('Ana Oliveira', 'ana@cliente.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'cliente'),
-('Pedro Santos', 'pedro@cliente.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'cliente');
-```
-
----
-
-## 📝 RESUMO FINAL DA MODELAGEM
-
-### **✅ O que foi definido:**
-
-1. **2 Tabelas principais:**
-   - `USUARIOS` (pessoas que usam o sistema)
-   - `PEDIDOS` (serviços solicitados)
-
-2. **Relacionamentos:**
-   - 1 Cliente → N Pedidos (1:N)
-   - 1 Responsável → N Pedidos (1:N)
-
-3. **Status do Pedido:**
-   - `pendente` → `em_andamento` → `entregue`
-   - `pendente` → `em_andamento` → `atrasado` → `entregue`
-   - `cancelado` (pode acontecer de qualquer status)
-
-4. **Níveis de Acesso:**
-   - **Cliente:** Cria pedidos, vê seus pedidos
-   - **Colaborador:** Assume pedidos, trabalha neles
-   - **Admin:** Gerencia tudo (usuários + pedidos)
-
-5. **Regras Automáticas:**
-   - Pedidos atrasam automaticamente se passar do prazo
-   - Colaboradores são desativados após 30 dias sem login
-   - Pedidos são deletados se o cliente for deletado
-   - Responsável é removido se o colaborador for deletado
-
-6. **Campos Obrigatórios ao Criar Pedido:**
-   - Todos os campos são obrigatórios ou preenchidos automaticamente
-   - Não há campos opcionais no formulário
-
-7. **Diferença Cliente vs Colaborador/Admin ao Criar:**
-   - **Cliente:** Cria pedido → `status = pendente` → aguarda ser assumido
-   - **Colab/Admin:** Cria pedido → `responsavel_id = próprio ID` → `status = em_andamento`
-
----
-
-## 🎯 PRÓXIMOS PASSOS
-
-Agora que a modelagem está completa, você pode:
-
-1. **Criar o Banco de Dados:**
-   - Executar o script SQL fornecido
-   - Testar conexões e inserções
-
-2. **Desenvolver o Backend:**
-   - Criar API REST (Node.js + Express)
-   - Implementar autenticação (JWT)
-   - Criar rotas para cada operação
-
-3. **Desenvolver o Frontend:**
-   - Criar interface (React, Vue, etc)
-   - Implementar telas por nível de acesso
-   - Conectar com a API
-
-4. **Implementar Jobs Automáticos:**
-   - Job para marcar pedidos atrasados
-   - Job para desativar colaboradores inativos
-   - Agendar execução diária (Cron)
-
-5. **Testes e Deploy:**
-   - Testar todos os fluxos
-   - Realizar testes de segurança
-   - Fazer deploy em produção
-
----
-
-**🎉 Documentação Completa!**
-
-Agora você tem toda a base teórica e prática para desenvolver o SGAM do zero! 💪
