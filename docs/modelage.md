@@ -142,7 +142,13 @@ Pensando no objetivo do SGAM (gerenciar pedidos de uma agência), temos:
 📋 SERVIÇOS solicitados pelos clientes
    (pedidos de design, desenvolvimento, etc)
    └─► Vão virar a tabela: PEDIDOS
+
+📜 HISTÓRICO de mudanças nos pedidos
+   (rastreabilidade e auditoria)
+   └─► Vão virar a tabela: PEDIDOS_STATUS_LOG
 ```
+
+---
 
 ## 📋 PASSO 2: DEFINIR ESTRUTURA DAS TABELAS
 
@@ -222,7 +228,7 @@ SE ativo == false:
   └─► Não importa se a senha está correta!
 ```
 
-### **📋 Especificações Técnicas**
+### **📋 Especificações Técnicas - USUARIOS**
 
 | Campo         | Tipo          | Restrições                    | Por que?                                    |
 |---------------|---------------|-------------------------------|---------------------------------------------|
@@ -235,6 +241,8 @@ SE ativo == false:
 | ultimo_login  | TIMESTAMP     | NULL                          | Data/hora do último acesso (pode ser nulo)  |
 | criado_em     | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Preenche automaticamente ao criar           |
 | atualizado_em | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Atualiza automaticamente ao modificar       |
+
+---
 
 ### **📦 Tabela: PEDIDOS**
 
@@ -259,7 +267,7 @@ SE ativo == false:
 │ ✅ data_conclusao    → Quando acabou│
 │ 📅 criado_em         → Quando criou │
 │ 🔄 atualizado_em     → Última mudança│
-└──────────────────────────────────────┘
+└─────────────────────────────────────┘
 ```
 
 ### **📝 Regras ao Criar Pedido (CLIENTE)**
@@ -290,8 +298,18 @@ PEDIDOS:
   ├─► descricao = "valor digitado"        ✅ Obrigatório
   ├─► orcamento = 5000.00                 ✅ Obrigatório
   ├─► prazo_entrega = '2026-01-20'        ✅ Obrigatório
-  ├─► prioridade = NULL                   🤖 Automático (NULL por padrão até que o responsável escolha a prioridade)
-  └─► criado_em = CURRENT_TIMESTAMP       🤖 Automático (Data atual)
+  ├─► prioridade = NULL                   🤖 Automático (NULL até responsável definir)
+  ├─► cancelado_por = NULL                🤖 Automático
+  ├─► concluido_por = NULL                🤖 Automático
+  ├─► data_conclusao = NULL               🤖 Automático
+  └─► criado_em = CURRENT_TIMESTAMP       🤖 Automático
+
+📜 PEDIDOS_STATUS_LOG (REGISTRO AUTOMÁTICO):
+  ├─► pedido_id = 42                      🤖 ID do pedido recém-criado
+  ├─► status_anterior = NULL              🤖 Não tinha status antes (criação)
+  ├─► status_novo = 'pendente'            🤖 Status inicial
+  ├─► alterado_por = 3                    🤖 ID do cliente que criou
+  └─► alterado_em = CURRENT_TIMESTAMP     🤖 Timestamp da criação
 ```
 
 ### **📝 Regras ao Criar Pedido (COLABORADOR/ADMINISTRADOR)**
@@ -316,16 +334,26 @@ PEDIDOS:
 💾 AO CLICAR "CRIAR PEDIDO", O BANCO SALVA:
 
 PEDIDOS:
-  ├─► cliente_id = 3                      ✅ Obrigatório
+  ├─► cliente_id = 3                      ✅ Obrigatório (escolhido)
   ├─► titulo = "valor digitado"           ✅ Obrigatório
   ├─► tipo_servico = "valor digitado"     ✅ Obrigatório
   ├─► descricao = "valor digitado"        ✅ Obrigatório
   ├─► orcamento = 5000.00                 ✅ Obrigatório
   ├─► prazo_entrega = '2026-01-20'        ✅ Obrigatório
   ├─► prioridade = 'alta'                 ✅ Obrigatório
-  ├─► responsavel_id = 5                  🤖 Automático / ✅ Obrigatório (Se for colab = ID do colab logado) (Se for admin = Pode se atribuir como responsável ou escolher outro colaborador/admin)
-  ├─► status = 'em_andamento'             🤖 Automático (Por ter responsável)
-  └─► criado_em = CURRENT_TIMESTAMP       🤖 Automático (Data atual)
+  ├─► responsavel_id = 5                  🤖 Automático (ID do colab/admin logado)
+  ├─► status = 'em_andamento'             🤖 Automático (já tem responsável)
+  ├─► cancelado_por = NULL                🤖 Automático
+  ├─► concluido_por = NULL                🤖 Automático
+  ├─► data_conclusao = NULL               🤖 Automático
+  └─► criado_em = CURRENT_TIMESTAMP       🤖 Automático
+
+📜 PEDIDOS_STATUS_LOG (REGISTRO AUTOMÁTICO):
+  ├─► pedido_id = 43                      🤖 ID do pedido recém-criado
+  ├─► status_anterior = NULL              🤖 Não tinha status antes (criação)
+  ├─► status_novo = 'em_andamento'        🤖 Status inicial (já com responsável)
+  ├─► alterado_por = 5                    🤖 ID do colaborador que criou
+  └─► alterado_em = CURRENT_TIMESTAMP     🤖 Timestamp da criação
 
 ✅ DIFERENÇA CRUCIAL:
   • Cliente: cria pedido → status 'pendente' → aguarda ser assumido
@@ -339,7 +367,7 @@ PEDIDOS:
   • Designar funções pros colaboradores
 ```
 
-### **📋 Especificações Técnicas**
+### **📋 Especificações Técnicas - PEDIDOS**
 
 | Campo          | Tipo          | Restrições                    | Por que?                                    |
 |----------------|---------------|-------------------------------|---------------------------------------------|
@@ -351,23 +379,21 @@ PEDIDOS:
 | descricao      | TEXT          | NOT NULL                      | Texto longo obrigatório com detalhes        |
 | orcamento      | DECIMAL(10,2) | NOT NULL                      | Valor obrigatório até 99.999.999,99         |
 | prazo_entrega  | DATE          | NOT NULL                      | Data limite obrigatória (YYYY-MM-DD)        |
-| status         | ENUM          | DEFAULT 'pendente'            | pendente, em_andamento, atrasado, entregue, cancelado 
-| prioridade     | ENUM          | NULL                          | baixa, media, alta, urgente (obrigatório)   |
-| cancelado_por  | INT           |FK usuarios.id, NULL           | Quem cancelou o pedido (rastreabilidade)    |
-| concluido_por  | INT           |FK usuarios.id, NULL           | Quem concluiu o pedido (rastreabilidade)    |
+| status         | ENUM          | DEFAULT 'pendente'            | pendente, em_andamento, atrasado, entregue, cancelado |
+| prioridade     | ENUM          | NULL                          | baixa, media, alta, urgente                 |
+| cancelado_por  | INT           | FK USUARIOS.id, NULL          | Quem cancelou o pedido (rastreabilidade)    |
+| concluido_por  | INT           | FK USUARIOS.id, NULL          | Quem concluiu o pedido (rastreabilidade)    |
 | data_conclusao | TIMESTAMP     | NULL                          | Preenche automaticamente ao finalizar       |
 | criado_em      | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Preenche automaticamente ao criar           |
 | atualizado_em  | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Atualiza automaticamente ao modificar       |
 
-PEDIDOS_STATUS_LOG
+---
 
-📦 Estrutura da Tabela: PEDIDOS_STATUS_LOG
-Para que serve?
+### **📦 Tabela: PEDIDOS_STATUS_LOG**
 
-Guardar histórico completo de mudanças de status
-Rastreabilidade: saber quem mudou o quê e quando
-Auditoria: identificar padrões e problemas no fluxo
+**Como fazer o histórico e a rastreabilidade de um pedido?**
 
+```
 ┌─────────────────────────────────────┐
 │      PEDIDOS_STATUS_LOG             │
 ├─────────────────────────────────────┤
@@ -378,8 +404,63 @@ Auditoria: identificar padrões e problemas no fluxo
 │ 👤 alterado_por (FK) → Quem mudou   │
 │ 📅 alterado_em      → Quando mudou  │
 └─────────────────────────────────────┘
-📋 Especificações Técnicas - PEDIDOS_STATUS_LOG
-CampoTipoRestriçõesPor que?idINTPK, AUTO_INCREMENTNúmero único gerado automaticamentepedido_idINTFK, NOT NULLConecta com PEDIDOS.idstatus_anteriorENUMNULLEstado antes da mudança (NULL na criação)status_novoENUMNOT NULLEstado depois da mudançaalterado_porINTFK, NULLConecta com USUARIOS.id (NULL = sistema)alterado_emTIMESTAMPDEFAULT CURRENT_TIMESTAMPQuando a mudança aconteceu
+```
+
+### **🎯 Objetivo da Tabela de Log**
+
+Esta tabela serve para:
+- **Auditoria:** Saber exatamente o que aconteceu com cada pedido
+- **Rastreabilidade:** Quem fez cada mudança e quando
+- **Análise:** Identificar gargalos no fluxo de trabalho
+- **Histórico permanente:** Mesmo que o pedido seja deletado, o log permanece
+
+### **📜 Regras de Funcionamento**
+
+```
+🤖 REGISTROS AUTOMÁTICOS:
+
+1. Ao CRIAR pedido:
+   └─► status_anterior = NULL
+   └─► status_novo = 'pendente' OU 'em_andamento'
+   └─► alterado_por = ID do usuário que criou
+
+2. Ao ASSUMIR pedido:
+   └─► status_anterior = 'pendente'
+   └─► status_novo = 'em_andamento'
+   └─► alterado_por = ID do colaborador que assumiu
+
+3. Ao ATRASAR pedido (AUTOMÁTICO):
+   └─► status_anterior = 'em_andamento'
+   └─► status_novo = 'atrasado'
+   └─► alterado_por = NULL (sistema fez a mudança)
+
+4. Ao CONCLUIR pedido:
+   └─► status_anterior = 'em_andamento' OU 'atrasado'
+   └─► status_novo = 'entregue'
+   └─► alterado_por = ID de quem concluiu
+
+5. Ao CANCELAR pedido:
+   └─► status_anterior = qualquer status
+   └─► status_novo = 'cancelado'
+   └─► alterado_por = ID de quem cancelou
+
+⚡ REGRA IMPORTANTE:
+  • alterado_por = NULL → Mudança AUTOMÁTICA do sistema
+  • alterado_por = ID → Mudança feita por USUÁRIO específico
+```
+
+### **📋 Especificações Técnicas - PEDIDOS_STATUS_LOG**
+
+| Campo           | Tipo       | Restrições                 | Por que?                                    |
+|-----------------|------------|----------------------------|---------------------------------------------|
+| id              | INT        | PK, AUTO_INCREMENT         | Número único gerado automaticamente         |
+| pedido_id       | INT        | FK, NOT NULL               | **Conecta** com PEDIDOS.id                  |
+| status_anterior | ENUM       | NULL                       | Estado antes da mudança (NULL na criação)   |
+| status_novo     | ENUM       | NOT NULL                   | Estado depois da mudança                    |
+| alterado_por    | INT        | FK, NULL                   | **Conecta** com USUARIOS.id (NULL = sistema)|
+| alterado_em     | TIMESTAMP  | DEFAULT CURRENT_TIMESTAMP  | Quando a mudança aconteceu                  |
+
+---
 
 ## 🚦 PASSO 3: DEFINIR FLUXO DE ESTADOS
 
@@ -419,8 +500,8 @@ CANCELADO:
 
 | Status           | Descrição                                          | Como chega nesse estado?                                    |
 |------------------|----------------------------------------------------|-------------------------------------------------------------|
-| **📝 PENDENTE**  | Pedido criado, aguardando alguém assumir           | • Cliente cria pedido<br>• Admin/Colab cria pedido          |
-| **🔄 EM_ANDAMENTO** | Alguém assumiu e está trabalhando               | • Colaborador clica "Assumir" em pedido pendente            |
+| **📝 PENDENTE**  | Pedido criado, aguardando alguém assumir           | • Cliente cria pedido                                       |
+| **🔄 EM_ANDAMENTO** | Alguém assumiu e está trabalhando               | • Colaborador clica "Assumir" em pedido pendente<br>• Admin/Colab cria pedido (já assume) |
 | **⏰ ATRASADO**  | Passou do prazo e ainda não foi entregue           | • Sistema verifica: `Data Atual > prazo_entrega`            |
 | **✅ ENTREGUE**  | Trabalho finalizado e entregue ao cliente          | • Colaborador clica "Concluir" (em_andamento ou atrasado)   |
 | **❌ CANCELADO** | Pedido foi abortado/cancelado                      | • Cliente/Colaborador clica "Cancelar" (qualquer estado)    |
@@ -428,7 +509,7 @@ CANCELADO:
 ### **⚠️ Regra de Atraso Automático**
 
 ```
-🤖 JOB AUTOMÁTICO:
+🤖 JOB AUTOMÁTICO DIÁRIO:
 
 Para cada pedido no banco:
   
@@ -437,6 +518,7 @@ Para cada pedido no banco:
   ENTÃO
     └─► status muda para 'atrasado'
     └─► atualizado_em = timestamp atual
+    └─► Cria registro no PEDIDOS_STATUS_LOG
 
 📌 EXEMPLO:
 
@@ -448,7 +530,16 @@ Pedido #42:
 🗓️ Dia 2026-01-06:
   └─► Sistema detecta: 06 > 05 ✅
   └─► status muda automaticamente para 'atrasado'
+  
+📜 Log criado:
+  ├─► pedido_id = 42
+  ├─► status_anterior = 'em_andamento'
+  ├─► status_novo = 'atrasado'
+  ├─► alterado_por = NULL (sistema)
+  └─► alterado_em = 2026-01-06 00:00:00
 ```
+
+---
 
 ## 🔗 PASSO 4: ESTABELECER RELACIONAMENTOS
 
@@ -462,6 +553,7 @@ Agora que sabemos **quais campos** cada tabela tem, vamos conectá-las usando **
 Pedido #1: "Criar Logo"
   └─► Quem criou esse pedido?
   └─► Quem está trabalhando nele?
+  └─► Quem finalizou?
 
 💡 SOLUÇÃO: Foreign Keys (Chaves Estrangeiras)
 
@@ -520,9 +612,122 @@ Pedido #1: "Criar Logo"
 ❌ SE deletar Maria do sistema:
    └─► Os pedidos dela NÃO são deletados
    └─► Apenas o responsavel_id vira NULL (sem responsável)
-   └─► Motivo: O pedido ainda existe, só ficou sem responsável, mas futuramente pode ser assumido por outro
-   └─► Status volta para "pendente" e outros colaboradores/administradores podem encontrola-lo na aba de 'Pedidos Pendentes'
+   └─► Motivo: O pedido ainda existe, só ficou sem responsável
+   └─► Status volta para "pendente" automaticamente
 ```
+
+### **🔗 Relacionamento 3: Quem CONCLUIU o pedido**
+
+```
+┌────────────────┐           ┌────────────────────┐
+│    USUARIOS    │           │     PEDIDOS        │
+├────────────────┤           ├────────────────────┤
+│ 🔑 id = 5      │◄─────────┤ concluido_por = 5  │
+│ nome: "Maria"  │   aponta  │ titulo: "Logo"     │
+│ nivel: colab   │           │ status: entregue   │
+└────────────────┘           └────────────────────┘
+
+📖 LEITURA:
+"O pedido 'Logo' foi concluído pela colaboradora Maria (id=5)"
+```
+
+- **Tipo de Relacionamento:** `1:N` (Um para Muitos)
+- **1 colaborador** pode concluir **vários pedidos**
+- **1 pedido** foi concluído por **apenas 1 pessoa** (ou nenhuma, quando NULL)
+
+**Regra de Deleção:** `ON DELETE SET NULL`
+
+```
+❌ SE deletar Maria do sistema:
+   └─► Os pedidos concluídos por ela NÃO são deletados
+   └─► Apenas o concluido_por vira NULL
+   └─► Motivo: Manter histórico, mas sem identificar quem fez
+```
+
+### **🔗 Relacionamento 4: Quem CANCELOU o pedido**
+
+```
+┌────────────────┐           ┌────────────────────┐
+│    USUARIOS    │           │     PEDIDOS        │
+├────────────────┤           ├────────────────────┤
+│ 🔑 id = 3      │◄─────────┤ cancelado_por = 3  │
+│ nome: "João"   │   aponta  │ titulo: "Logo"     │
+│ nivel: cliente │           │ status: cancelado  │
+└────────────────┘           └────────────────────┘
+
+📖 LEITURA:
+"O pedido 'Logo' foi cancelado pelo cliente João (id=3)"
+```
+
+- **Tipo de Relacionamento:** `1:N` (Um para Muitos)
+- **1 usuário** pode cancelar **vários pedidos**
+- **1 pedido** foi cancelado por **apenas 1 pessoa** (ou nenhuma, quando NULL)
+
+**Regra de Deleção:** `ON DELETE SET NULL`
+
+```
+❌ SE deletar João do sistema:
+   └─► Os pedidos cancelados por ele NÃO são deletados
+   └─► Apenas o cancelado_por vira NULL
+   └─► Motivo: Manter histórico, mas sem identificar quem fez
+```
+
+### **🔗 Relacionamento 5: LOG rastreia PEDIDO**
+
+```
+┌────────────────┐           ┌─────────────────────┐
+│    PEDIDOS     │           │ PEDIDOS_STATUS_LOG  │
+├────────────────┤           ├─────────────────────┤
+│ 🔑 id = 42     │◄─────────┤ pedido_id = 42      │
+│ status: ...    │   aponta  │ status_anterior: ...│
+└────────────────┘           │ status_novo: ...    │
+                             └─────────────────────┘
+
+📖 LEITURA:
+"Este registro de log documenta uma mudança no pedido #42"
+```
+
+- **Tipo de Relacionamento:** `1:N` (Um para Muitos)
+- **1 pedido** pode ter **vários registros de log**
+- **1 registro de log** pertence a **apenas 1 pedido**
+
+**Regra de Deleção:** `ON DELETE CASCADE`
+
+```
+❌ SE deletar um pedido:
+   └─► Todo o histórico de logs desse pedido também é DELETADO
+   └─► Motivo: Logs sem pedido não fazem sentido
+```
+
+### **🔗 Relacionamento 6: LOG rastreia USUÁRIO que alterou**
+
+```
+┌────────────────┐           ┌─────────────────────┐
+│    USUARIOS    │           │ PEDIDOS_STATUS_LOG  │
+├────────────────┤           ├─────────────────────┤
+│ 🔑 id = 5      │◄─────────┤ alterado_por = 5    │
+│ nome: "Maria"  │   aponta  │ pedido_id: 42       │
+└────────────────┘           │ status_novo: ...    │
+                             └─────────────────────┘
+
+📖 LEITURA:
+"Maria (id=5) fez esta alteração no pedido"
+```
+
+- **Tipo de Relacionamento:** `1:N` (Um para Muários)
+- **1 usuário** pode fazer **várias alterações**
+- **1 registro de log** foi feito por **apenas 1 usuário** (ou sistema, quando NULL)
+
+**Regra de Deleção:** `ON DELETE SET NULL`
+
+```
+❌ SE deletar Maria do sistema:
+   └─► Os logs NÃO são deletados
+   └─► Apenas o alterado_por vira NULL
+   └─► Motivo: Manter histórico mesmo sem identificar quem fez
+```
+
+---
 
 ## 👥 PASSO 5: DEFINIR PERMISSÕES POR NÍVEL
 
@@ -545,12 +750,12 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 | Tela                          | O que vê?                                           | O que pode fazer?                   |
 |-------------------------------|-----------------------------------------------------|-------------------------------------|
 | **📊 Dashboard**              | Estatísticas pessoais e avisos                      | Apenas visualizar                   |
-| **📝 Pedidos Pendentes**      | Lista global de pedidos `pendente` (sem dono)       | Assumir pedido                      |
+| **📝 Pedidos Pendentes**      | Lista global de pedidos `pendente` (sem dono)       | Assumir pedido, Criar pedido        |
 | **🔄 Meus Pedidos**           | Pedidos que assumiu (`em_andamento` ou `atrasado`)  | Concluir, Cancelar                  |
 | **✅ Finalizados**            | Pedidos que entregou/cancelou                       | Apenas visualizar                   |
 | **👤 Perfil**                 | Nome, Email, Senha, Nível (somente leitura)         | Editar Nome e Senha                 |
 
-### **📊 Dashboard - Estatísticas e Avisos**
+### **📊 Dashboard - Estatísticas e Avisos (Colaborador)**
 
 ```
 ┌───────────────────────────────────────────────────────┐
@@ -596,7 +801,7 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 | Tela                          | O que vê?                                                     | O que pode fazer?                   |
 |-------------------------------|---------------------------------------------------------------|-------------------------------------|
 | **📊 Dashboard**              | Visão Pessoal + Visão Global da Equipe                        | Apenas visualizar                   |
-| **📝 Pedidos Pendentes**      | Lista global de pedidos `pendente` (sem dono)                 | Assumir pedido                      |
+| **📝 Pedidos Pendentes**      | Lista global de pedidos `pendente` (sem dono)                 | Assumir pedido, Criar pedido        |
 | **🔄 Meus Pedidos**           | Pedidos que assumiu (`em_andamento` ou `atrasado`)            | Concluir, Cancelar                  |
 | **✅ Finalizados**            | Pedidos que entregou/cancelou                                 | Apenas visualizar                   |
 | **👥 Gestão de Clientes**     | Lista de usuários com `nivel_acesso = 'cliente'`              | Editar `ativo` e `nivel_acesso`     |
@@ -622,7 +827,7 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 │  │  🎨 Design: 35%    │  │  📝 Pendente: 5     │     │
 │  │  💻 Dev: 35%       │  │  🔄 Andamento: 12   │     │
 │  │  📱 Story: 25%      │  │  ⏰ Atrasado: 3     │     │
-│  │  📈 SEO: 5%        │  │  ✅ Entregue: 45   │      │
+│  │  📈 SEO: 5%        │  │  ✅ Entregue: 45    │      │
 │  └─────────────────────┘  └─────────────────────┘     │
 │                                                       │
 │  ⚠️ AVISOS PESSOAIS:                                  │
@@ -662,13 +867,10 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 │  │ 🔴 Carlos Lima - 32 dias sem login (INATIVO)  │   │
 │  └───────────────────────────────────────────────┘    │
 │                                                       │
-│  📊 GRÁFICOS E ESTATÍSTICAS:                          │
-│  [Gráficos de pizza e barras como no dashboard do     │
-│   colaborador, mostrando distribuição de tipos de     │
-│   serviço e status dos pedidos]                       │
-│                                                       │
 └───────────────────────────────────────────────────────┘
 ```
+
+---
 
 ## 🎯 PASSO 6: DEFINIR AÇÕES EM PEDIDOS
 
@@ -677,9 +879,10 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 ```
 📋 COLABORADOR MARIA ESTÁ NA TELA "PEDIDOS PENDENTES":
 
-┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-| ID: 41 | Título: Logo Pet Shop | Tipo: Logo | Descrição: Fazer uma logo... | Orçamento: 100 | Prazo: 02/12/26 | Cliente: João │
-└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+| ID: 41 | Título: Logo Pet Shop | Tipo: Logo | Descrição: Fazer uma logo... | 
+| Orçamento: 100 | Prazo: 02/12/26 | Cliente: João |
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
 1. Assumir -> Digite o ID do pedido
 
 👆 Maria digita o ID do pedido que deseja assumir.
@@ -697,6 +900,13 @@ DEPOIS:
   ├─► responsavel_id = 5                  ← ID da Maria
   └─► atualizado_em = 2026-01-04 15:00:00 ← Timestamp
 
+📜 PEDIDOS_STATUS_LOG (REGISTRO AUTOMÁTICO):
+  ├─► pedido_id = 42                      
+  ├─► status_anterior = 'pendente'        ← Estado antes
+  ├─► status_novo = 'em_andamento'        ← Estado depois
+  ├─► alterado_por = 5                    ← ID da Maria
+  └─► alterado_em = 2026-01-04 15:00:00   ← Quando assumiu
+
 📋 RESULTADO:
   • Pedido sai da lista "Pedidos Pendentes"
   • Pedido aparece em "Meus Pedidos" da Maria
@@ -708,10 +918,11 @@ DEPOIS:
 ```
 🔄 MARIA ESTÁ EM "MEUS PEDIDOS (EM ABERTO)":
 
-┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-| Título: Logo Pet Shop | Tipo: Logo | Descrição: Fazer uma logo... | Orçamento: 100 | Prazo: 02/12/26 | Cliente: João │
-│ Status: Em andamento | Prioridade: Alta                                                                              │
-└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+| Título: Logo Pet Shop | Tipo: Logo | Descrição: Fazer uma logo... | 
+| Orçamento: 100 | Prazo: 02/12/26 | Cliente: João |
+| Status: Em andamento | Prioridade: Alta |
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
 1. Concluir
 2. Cancelar
 0. Voltar
@@ -724,34 +935,109 @@ DEPOIS:
 
 ANTES:
   ├─► status = 'em_andamento'
+  ├─► concluido_por = NULL
   └─► data_conclusao = NULL
 
 DEPOIS:
   ├─► status = 'entregue'                       ← Mudou
-  ├─► data_conclusao = 2026-01-10 16:45:00      ← Timestamp do servidor
+  ├─► concluido_por = 5                         ← ID da Maria
+  ├─► data_conclusao = 2026-01-10 16:45:00      ← Timestamp
   └─► atualizado_em = 2026-01-10 16:45:00       ← Timestamp
+
+📜 PEDIDOS_STATUS_LOG (REGISTRO AUTOMÁTICO):
+  ├─► pedido_id = 42                      
+  ├─► status_anterior = 'em_andamento'    ← Estado antes
+  ├─► status_novo = 'entregue'            ← Estado depois
+  ├─► alterado_por = 5                    ← ID da Maria
+  └─► alterado_em = 2026-01-10 16:45:00   ← Quando concluiu
 
 📋 RESULTADO:
   • Pedido sai de "Meus Pedidos (Em Aberto)" da Maria
   • Pedido aparece em "Finalizados" da Maria
   • João vê o pedido em "Minhas Entregas" com status "entregue"
+  • Sistema registrou que Maria foi quem concluiu
 ```
 
 ### **❌ Ação: "CANCELAR" Pedido**
 
 ```
-Funciona igual ao "Concluir", mas:
+QUALQUER ESTADO → CANCELADO
 
-💾 BANCO ATUALIZA:
+Cliente pode cancelar: Seus próprios pedidos
+Colaborador pode cancelar: Pedidos que assumiu
+Admin pode cancelar: Qualquer pedido
+
+↓
+
+💾 BANCO ATUALIZA O PEDIDO #42:
+
+ANTES:
+  ├─► status = 'em_andamento' (ou qualquer outro)
+  ├─► cancelado_por = NULL
+  └─► data_conclusao = NULL
+
+DEPOIS:
   ├─► status = 'cancelado'                      ← Mudou
-  ├─► data_conclusao = 2026-01-10 17:00:00      ← Timestamp do servidor
+  ├─► cancelado_por = 5                         ← ID de quem cancelou
+  ├─► data_conclusao = 2026-01-10 17:00:00      ← Timestamp
   └─► atualizado_em = 2026-01-10 17:00:00       ← Timestamp
+
+📜 PEDIDOS_STATUS_LOG (REGISTRO AUTOMÁTICO):
+  ├─► pedido_id = 42                      
+  ├─► status_anterior = 'em_andamento'    ← Estado antes
+  ├─► status_novo = 'cancelado'           ← Estado depois
+  ├─► alterado_por = 5                    ← ID de quem cancelou
+  └─► alterado_em = 2026-01-10 17:00:00   ← Quando cancelou
 
 📋 RESULTADO:
   • Pedido SAI de "Meus Pedidos (Em Aberto)"
   • Pedido APARECE em "Finalizados" com status "cancelado"
   • Cliente vê em "Minhas Entregas" com status "cancelado"
+  • Sistema registrou quem cancelou
 ```
+
+### **🤖 Mudança Automática: Status "ATRASADO"**
+
+```
+🤖 JOB AUTOMÁTICO DIÁRIO (roda todo dia às 00:00):
+
+Para cada pedido no banco:
+  
+  SE status == 'em_andamento'
+  E Data Atual > prazo_entrega
+  ENTÃO
+
+↓
+
+💾 BANCO ATUALIZA O PEDIDO #42:
+
+ANTES:
+  ├─► status = 'em_andamento'
+  └─► prazo_entrega = 2026-01-05
+
+DEPOIS (em 2026-01-06):
+  ├─► status = 'atrasado'                 ← Mudou automaticamente
+  └─► atualizado_em = 2026-01-06 00:00:00 ← Timestamp
+
+📜 PEDIDOS_STATUS_LOG (REGISTRO AUTOMÁTICO):
+  ├─► pedido_id = 42                      
+  ├─► status_anterior = 'em_andamento'    
+  ├─► status_novo = 'atrasado'            
+  ├─► alterado_por = NULL                 ← NULL = Sistema fez a mudança
+  └─► alterado_em = 2026-01-06 00:00:00   
+
+⚡ DIFERENÇA IMPORTANTE:
+  • alterado_por = NULL → Mudança AUTOMÁTICA do sistema
+  • alterado_por com ID → Mudança feita por USUÁRIO
+
+📋 RESULTADO:
+  • Pedido continua em "Meus Pedidos" do responsável
+  • Status muda visualmente para "atrasado" (vermelho)
+  • Aparece nos alertas de "Pedidos Atrasados"
+  • Responsável recebe notificação de atraso
+```
+
+---
 
 ## 🔐 PASSO 7: DEFINIR GESTÃO DE USUÁRIOS
 
@@ -814,3 +1100,308 @@ Funciona igual ao "Concluir", mas:
    └─► Sistema deve avisar: "Este usuário tem X pedidos em aberto"
    └─► Admin decide se realmente quer desativar
 ```
+
+---
+
+## 📊 PASSO 8: CONSULTAS ÚTEIS COM HISTÓRICO
+
+### **🔍 Ver Histórico Completo de um Pedido**
+
+```sql
+SELECT 
+  psl.id,
+  psl.status_anterior,
+  psl.status_novo,
+  COALESCE(u.nome, 'Sistema') AS alterado_por_nome,
+  psl.alterado_em
+FROM pedidos_status_log psl
+LEFT JOIN usuarios u ON psl.alterado_por = u.id
+WHERE psl.pedido_id = 42
+ORDER BY psl.alterado_em ASC;
+
+📋 RESULTADO:
+┌────┬─────────────────┬────────────────┬──────────────────┬─────────────────────┐
+│ id │ status_anterior │ status_novo    │ alterado_por_nome│ alterado_em         │
+├────┼─────────────────┼────────────────┼──────────────────┼─────────────────────┤
+│ 1  │ NULL            │ pendente       │ João Silva       │ 2026-01-01 10:00:00 │
+│ 2  │ pendente        │ em_andamento   │ Maria Costa      │ 2026-01-02 14:30:00 │
+│ 3  │ em_andamento    │ atrasado       │ Sistema          │ 2026-01-06 00:00:00 │
+│ 4  │ atrasado        │ entregue       │ Maria Costa      │ 2026-01-10 16:45:00 │
+└────┴─────────────────┴────────────────┴──────────────────┴─────────────────────┘
+
+📖 LEITURA:
+1. João criou o pedido (status: pendente)
+2. Maria assumiu o pedido (status: em_andamento)
+3. Sistema detectou atraso automático (status: atrasado)
+4. Maria finalizou o pedido (status: entregue)
+```
+
+### **🔍 Ver Quem Mais Conclui Pedidos**
+
+```sql
+SELECT 
+  u.nome,
+  COUNT(p.id) AS pedidos_concluidos
+FROM pedidos p
+INNER JOIN usuarios u ON p.concluido_por = u.id
+WHERE p.status = 'entregue'
+GROUP BY u.id, u.nome
+ORDER BY pedidos_concluidos DESC;
+
+📋 RESULTADO:
+┌─────────────────┬────────────────────┐
+│ nome            │ pedidos_concluidos │
+├─────────────────┼────────────────────┤
+│ Maria Costa     │ 45                 │
+│ João Silva      │ 32                 │
+│ Pedro Santos    │ 28                 │
+└─────────────────┴────────────────────┘
+```
+
+### **🔍 Ver Taxa de Cancelamento por Usuário**
+
+```sql
+SELECT 
+  u.nome,
+  COUNT(p.id) AS pedidos_cancelados
+FROM pedidos p
+INNER JOIN usuarios u ON p.cancelado_por = u.id
+WHERE p.status = 'cancelado'
+GROUP BY u.id, u.nome
+ORDER BY pedidos_cancelados DESC;
+
+📋 RESULTADO:
+┌─────────────────┬────────────────────┐
+│ nome            │ pedidos_cancelados │
+├─────────────────┼────────────────────┤
+│ João Silva      │ 12                 │
+│ Ana Oliveira    │ 8                  │
+│ Carlos Lima     │ 5                  │
+└─────────────────┴────────────────────┘
+```
+
+### **🔍 Ver Tempo Médio Entre Status**
+
+```sql
+SELECT 
+  p.id,
+  p.titulo,
+  u_cliente.nome AS cliente,
+  u_resp.nome AS responsavel,
+  p.criado_em AS data_criacao,
+  (SELECT alterado_em FROM pedidos_status_log 
+   WHERE pedido_id = p.id AND status_novo = 'em_andamento' 
+   LIMIT 1) AS data_assumido,
+  p.data_conclusao,
+  DATEDIFF(p.data_conclusao, p.criado_em) AS dias_totais
+FROM pedidos p
+LEFT JOIN usuarios u_cliente ON p.cliente_id = u_cliente.id
+LEFT JOIN usuarios u_resp ON p.responsavel_id = u_resp.id
+WHERE p.status = 'entregue'
+ORDER BY dias_totais DESC;
+
+📋 RESULTADO:
+┌────┬───────────────┬──────────┬─────────────┬─────────────┬──────────────┬──────────────┬────────────┐
+│ id │ titulo        │ cliente  │ responsavel │ criacao     │ assumido     │ conclusao    │ dias_total │
+├────┼───────────────┼──────────┼─────────────┼─────────────┼──────────────┼──────────────┼────────────┤
+│ 42 │ Logo Pet Shop │ João     │ Maria       │ 01/01 10:00 │ 02/01 14:30  │ 10/01 16:45  │ 9          │
+│ 38 │ Site Empresa  │ Ana      │ Pedro       │ 28/12 09:00 │ 29/12 10:00  │ 05/01 18:00  │ 8          │
+└────┴───────────────┴──────────┴─────────────┴─────────────┴──────────────┴──────────────┴────────────┘
+```
+
+### **🔍 Ver Pedidos que Foram Atrasados**
+
+```sql
+SELECT 
+  p.id,
+  p.titulo,
+  u.nome AS responsavel,
+  p.prazo_entrega,
+  (SELECT alterado_em FROM pedidos_status_log 
+   WHERE pedido_id = p.id AND status_novo = 'atrasado' 
+   LIMIT 1) AS data_atraso,
+  DATEDIFF(p.data_conclusao, p.prazo_entrega) AS dias_atraso
+FROM pedidos p
+LEFT JOIN usuarios u ON p.responsavel_id = u.id
+WHERE p.id IN (
+  SELECT DISTINCT pedido_id 
+  FROM pedidos_status_log 
+  WHERE status_novo = 'atrasado'
+)
+AND p.status = 'entregue'
+ORDER BY dias_atraso DESC;
+
+📋 RESULTADO:
+┌────┬────────────────┬─────────────┬──────────────┬─────────────┬────────────┐
+│ id │ titulo         │ responsavel │ prazo        │ data_atraso │ dias_atraso│
+├────┼────────────────┼─────────────┼──────────────┼─────────────┼────────────┤
+│ 29 │ Campanha       │ Carlos      │ 02/01        │ 03/01 00:00 │ 5          │
+│ 33 │ Identidade     │ Ana         │ 03/01        │ 04/01 00:00 │ 3          │
+└────┴────────────────┴─────────────┴──────────────┴─────────────┴────────────┘
+```
+
+---
+
+## 📋 RESUMO COMPLETO DA MODELAGEM
+
+### **🗂️ Estrutura das Tabelas**
+
+```
+📦 BANCO DE DADOS: sgam
+
+├─► 📊 USUARIOS (9 campos)
+│   ├─ id (PK)
+│   ├─ nome
+│   ├─ email (UNIQUE)
+│   ├─ senha (hash bcrypt)
+│   ├─ nivel_acesso (ENUM: cliente, colaborador, admin)
+│   ├─ ativo (BOOLEAN)
+│   ├─ ultimo_login
+│   ├─ criado_em
+│   └─ atualizado_em
+│
+├─► 📊 PEDIDOS (15 campos)
+│   ├─ id (PK)
+│   ├─ cliente_id (FK → usuarios.id)
+│   ├─ responsavel_id (FK → usuarios.id)
+│   ├─ titulo
+│   ├─ tipo_servico
+│   ├─ descricao
+│   ├─ orcamento
+│   ├─ prazo_entrega
+│   ├─ status (ENUM: pendente, em_andamento, atrasado, entregue, cancelado)
+│   ├─ prioridade (ENUM: baixa, media, alta, urgente)
+│   ├─ cancelado_por (FK → usuarios.id)
+│   ├─ concluido_por (FK → usuarios.id)
+│   ├─ data_conclusao
+│   ├─ criado_em
+│   └─ atualizado_em
+│
+└─► 📊 PEDIDOS_STATUS_LOG (6 campos)
+    ├─ id (PK)
+    ├─ pedido_id (FK → pedidos.id)
+    ├─ status_anterior (ENUM)
+    ├─ status_novo (ENUM)
+    ├─ alterado_por (FK → usuarios.id, NULL = sistema)
+    └─ alterado_em
+```
+
+### **🔗 Relacionamentos**
+
+```
+USUARIOS 1───N PEDIDOS (cliente_id)
+   │              
+   └────1───N PEDIDOS (responsavel_id)
+   │
+   └────1───N PEDIDOS (concluido_por)
+   │
+   └────1───N PEDIDOS (cancelado_por)
+   │
+   └────1───N PEDIDOS_STATUS_LOG (alterado_por)
+
+PEDIDOS 1───N PEDIDOS_STATUS_LOG (pedido_id)
+```
+
+### **🎯 Fluxo de Status**
+
+```
+CRIAÇÃO
+   ↓
+PENDENTE ──assumir──► EM_ANDAMENTO ──concluir──► ENTREGUE
+   │                       │
+   │                       ├──atraso (auto)──► ATRASADO ──concluir──► ENTREGUE
+   │                       │                       │
+   └───────cancelar────────┴───────cancelar───────┴──► CANCELADO
+```
+
+### **👥 Permissões por Nível**
+
+```
+CLIENTE:
+  ✅ Criar pedidos
+  ✅ Ver seus pedidos
+  ✅ Cancelar seus pedidos
+  ❌ Assumir pedidos
+  ❌ Ver pedidos de outros
+  ❌ Gerenciar usuários
+
+COLABORADOR:
+  ✅ Criar pedidos (já como responsável)
+  ✅ Assumir pedidos pendentes
+  ✅ Ver todos os pedidos pendentes
+  ✅ Concluir seus pedidos
+  ✅ Cancelar seus pedidos
+  ✅ Ver dashboard pessoal
+  ❌ Ver pedidos de outros colaboradores
+  ❌ Gerenciar usuários
+
+ADMINISTRADOR:
+  ✅ Tudo que colaborador pode
+  ✅ Ver TODOS os pedidos do sistema
+  ✅ Editar qualquer pedido
+  ✅ Gerenciar usuários (ativar/desativar)
+  ✅ Mudar nível de acesso
+  ✅ Ver dashboard global da equipe
+  ✅ Acessar estatísticas completas
+```
+
+### **🤖 Automações do Sistema**
+
+```
+1. VERIFICAÇÃO DIÁRIA DE ATRASO (00:00):
+   └─► Muda pedidos 'em_andamento' para 'atrasado'
+   └─► Quando: Data Atual > prazo_entrega
+   └─► Cria log com alterado_por = NULL
+
+2. VERIFICAÇÃO DIÁRIA DE INATIVIDADE (00:00):
+   └─► Desativa colaboradores inativos
+   └─► Quando: ultimo_login > 30 dias
+   └─► Apenas colaboradores (admin e cliente imunes)
+
+3. REGISTRO AUTOMÁTICO DE LOG:
+   └─► Toda mudança de status gera registro
+   └─► Inclui: quem fez, quando fez, de onde veio, pra onde foi
+   └─► Sistema = alterado_por NULL
+```
+
+### **✅ Validações e Regras**
+
+```
+PEDIDOS:
+  ✅ Cliente obrigatório
+  ✅ Título, descrição, orçamento, prazo obrigatórios
+  ✅ Status padrão: pendente (cliente) ou em_andamento (colab/admin)
+  ✅ Prioridade obrigatória para colab/admin, NULL para cliente
+  ✅ Responsável obrigatório ao criar como colab/admin
+  ✅ Cancelado_por preenchido ao cancelar
+  ✅ Concluido_por preenchido ao concluir
+
+USUARIOS:
+  ✅ Email único no sistema
+  ✅ Senha sempre criptografada (bcrypt)
+  ✅ Nível padrão: cliente
+  ✅ Status padrão: ativo
+  ✅ Admin não pode desativar a si mesmo
+  ✅ Admin não pode mudar próprio nível
+
+SEGURANÇA:
+  ✅ Login bloqueado se ativo = false
+  ✅ Colaborador inativo após 30 dias sem login
+  ✅ Senhas nunca em texto puro
+  ✅ Cada ação registrada com timestamp e usuário
+```
+
+---
+
+## 🎓 CONCLUSÃO
+
+Esta modelagem define **TUDO** que o sistema SGAM precisa:
+
+✅ **Estrutura de dados clara e completa**
+✅ **Relacionamentos bem definidos**
+✅ **Regras de negócio documentadas**
+✅ **Permissões por nível de acesso**
+✅ **Fluxo de estados e transições**
+✅ **Rastreabilidade total com histórico**
+✅ **Automações do sistema**
+✅ **Validações e segurança**

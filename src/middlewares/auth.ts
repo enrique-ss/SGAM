@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../service/AuthService';
+import { AuthService } from '../services/AuthService';
 
 // Extender o tipo Request para incluir dados de autenticação
 declare global {

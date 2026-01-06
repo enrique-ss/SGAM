@@ -5,7 +5,7 @@ import authRoutes from './routes/AuthRoutes';
 import usuarioRoutes from './routes/UsuarioRoutes';
 import pedidoRoutes from './routes/PedidoRoutes';
 import dashboardRoutes from './routes/DashboardRoutes';
-import { CronService } from './service/CronService';
+import { CronService } from './services/CronService';
 
 dotenv.config();
 

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PedidoService } from '../service/PedidoService';
+import { PedidoService } from '../services/PedidoService';
 
 export class PedidoController {
   // POST /api/pedidos/cliente

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { DashboardService } from '../service/DashboardService';
+import { DashboardService } from '../services/DashboardService';
 
 export class DashboardController {
   // GET /api/dashboard/colaborador
