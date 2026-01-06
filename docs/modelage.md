@@ -1,6 +1,134 @@
 # 📊 MODELAGEM DE DADOS - SGAM
 
-## 🧩 PASSO 1: IDENTIFICAR AS "COISAS" (ENTIDADES)
+## 💭 CONTEXTO E MOTIVAÇÃO
+
+### **🎯 O Problema**
+
+Durante o desenvolvimento do SGAM, criei três interfaces diferentes para o mesmo sistema:
+
+```
+📱 Interface Web (Frontend)
+   └─► Permitia criar pedidos sem prioridade
+   └─► Status mudavam de forma diferente
+   └─► Algumas validações não existiam
+
+🖥️ CLI (Command Line Interface)
+   └─► Tinha regras próprias de negócio
+   └─► Colaborador podia criar pedido como cliente
+   └─► Comportamento diferente do web
+
+🔌 Backend API
+   └─► Validações parcialmente implementadas
+   └─► Endpoints com comportamentos inconsistentes
+   └─► Sem documentação clara das regras
+```
+
+**Resultado:** Parecia que eu tinha 3 sistemas diferentes, não 1 só!
+
+### **😓 Dores que eu sentia:**
+
+1. **Perda de tempo brutal**
+   - "Espera, como funciona mesmo a criação de pedido no web?"
+   - "No CLI eu fiz de um jeito, no web de outro... qual é o certo?"
+   - Precisava abrir 3 códigos diferentes pra lembrar as regras
+
+2. **Bugs e inconsistências**
+   - Cliente criava pedido no web sem prioridade
+   - Colaborador no CLI conseguia fazer coisas que não deveria
+   - Backend aceitava dados que o frontend bloqueava
+
+3. **Impossível de manter**
+   - Mudança em uma regra = alterar 3 lugares diferentes
+   - Alto risco de esquecer de atualizar uma das interfaces
+   - Testes viravam um pesadelo
+
+4. **Falta de clareza**
+   - Eu mesmo não sabia mais quais eram as regras "corretas"
+   - Não havia uma fonte única da verdade
+   - Difícil explicar o sistema para outras pessoas
+
+### **💡 A Solução: Modelagem de Dados**
+
+Percebi que o problema não era técnico, era de **planejamento**. Eu estava codando sem ter definido claramente:
+
+- ✅ Quais dados eu preciso guardar?
+- ✅ Quais são as regras de negócio?
+- ✅ Como os dados se relacionam?
+- ✅ O que cada tipo de usuário pode fazer?
+- ✅ Quais são os fluxos possíveis?
+
+**Então parei de codificar e comecei a documentar.**
+
+### **📚 O que aprendi com este processo:**
+
+#### **1. Documentação ANTES do código**
+```
+❌ ANTES: Código → Problema → Refatorar → Mais problemas
+✅ AGORA: Documentação → Código seguindo as regras → Sistema coeso
+```
+
+#### **2. A modelagem é a fonte única da verdade**
+- Backend, CLI e Web agora seguem a MESMA documentação
+- Qualquer dúvida? Consulto a modelagem
+- Mudança necessária? Atualizo a modelagem primeiro, depois o código
+
+#### **3. Regras de negócio não são código, são requisitos**
+```
+Exemplo:
+"Cliente não pode assumir pedidos" 
+
+Isso não é uma decisão técnica de implementação.
+É uma REGRA DE NEGÓCIO que deve estar documentada ANTES de codar.
+```
+
+#### **4. Visualização ajuda MUITO**
+Os diagramas ASCII art me ajudaram a:
+- Entender os relacionamentos entre tabelas
+- Ver os fluxos de estado dos pedidos
+- Identificar campos faltantes
+- Perceber regras inconsistentes
+
+#### **5. Pensar em "quem pode fazer o quê" é essencial**
+Antes eu pensava em features: "preciso de uma tela de pedidos"
+Agora penso em permissões: "o que cada nível de usuário pode fazer?"
+
+### **🎯 Resultado Final**
+
+Agora tenho:
+
+✅ **Uma fonte única da verdade**
+   - Todas as interfaces seguem as mesmas regras
+   - Zero ambiguidade sobre comportamentos
+
+✅ **Facilidade para desenvolver**
+   - Abro a documentação e sei exatamente o que implementar
+   - Não preciso ficar "adivinhando" regras
+
+✅ **Consistência garantida**
+   - Backend valida exatamente o que o frontend espera
+   - CLI se comporta igual ao web
+   - Bugs diminuíram drasticamente
+
+✅ **Manutenibilidade**
+   - Mudanças são planejadas na documentação primeiro
+   - Depois aplico em todas as interfaces de forma consistente
+
+✅ **Comunicação clara**
+   - Posso mostrar essa doc para qualquer pessoa
+   - Ela entende o sistema sem precisar ler código
+
+### **🚀 Próximos Passos**
+
+Esta documentação é a base para:
+1. Refatorar o backend seguindo as regras definidas
+2. Atualizar o CLI para ser consistente
+3. Ajustar o frontend web para seguir o mesmo padrão
+4. Criar testes baseados nas regras documentadas
+5. Eventualmente, adicionar novas features de forma estruturada
+
+---
+
+## 🧩 PASSO 1: IDENTIFICAR ENTIDADES
 
 **Pergunta:** O que preciso guardar no sistema?
 
@@ -16,11 +144,11 @@ Pensando no objetivo do SGAM (gerenciar pedidos de uma agência), temos:
    └─► Vão virar a tabela: PEDIDOS
 ```
 
-## 📋 PASSO 2: DEFINIR OS CAMPOS DE CADA TABELA
+## 📋 PASSO 2: DEFINIR ESTRUTURA DAS TABELAS
 
 Agora vamos detalhar **o que guardar** sobre cada "coisa" identificada.
 
-### 📦 **Tabela: USUARIOS**
+### **📦 Tabela: USUARIOS**
 
 **O que guardar sobre uma pessoa?**
 
@@ -39,7 +167,8 @@ Agora vamos detalhar **o que guardar** sobre cada "coisa" identificada.
 │ 🔄 atualizado_em → Última mudança   │
 └─────────────────────────────────────┘
 ```
-**🔐 Regras de Segurança e Cadastro:**
+
+### **🔐 Regras de Segurança e Cadastro**
 
 ```
 📝 AO CADASTRAR UM NOVO USUÁRIO:
@@ -59,7 +188,7 @@ Agora vamos detalhar **o que guardar** sobre cada "coisa" identificada.
    └─► criado_em = timestamp atual
 ```
 
-**⚠️ Regra de Inatividade Automática:**
+### **⚠️ Regra de Inatividade Automática**
 
 ```
 🕐 VERIFICAÇÃO DIÁRIA:
@@ -78,7 +207,7 @@ Para cada usuário no banco:
   - Objetivo: manter equipe ativa atualizada
 ```
 
-**🚫 Bloqueio de Acesso:**
+### **🚫 Bloqueio de Acesso**
 
 ```
 🔐 AO FAZER LOGIN:
@@ -93,7 +222,7 @@ SE ativo == false:
   └─► Não importa se a senha está correta!
 ```
 
-**Detalhes Técnicos:**
+### **📋 Especificações Técnicas**
 
 | Campo         | Tipo          | Restrições                    | Por que?                                    |
 |---------------|---------------|-------------------------------|---------------------------------------------|
@@ -107,7 +236,7 @@ SE ativo == false:
 | criado_em     | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Preenche automaticamente ao criar           |
 | atualizado_em | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Atualiza automaticamente ao modificar       |
 
-### 📦 **Tabela: PEDIDOS**
+### **📦 Tabela: PEDIDOS**
 
 **O que guardar sobre um pedido?**
 
@@ -131,7 +260,7 @@ SE ativo == false:
 └─────────────────────────────────────┘
 ```
 
-#### **📝 Regras ao Criar Pedido (CLIENTE):**
+### **📝 Regras ao Criar Pedido (CLIENTE)**
 
 ```
 🆕 QUANDO O CLIENTE CLICA "NOVO PEDIDO":
@@ -163,7 +292,7 @@ PEDIDOS:
   └─► criado_em = CURRENT_TIMESTAMP       🤖 Automático (Data atual)
 ```
 
-#### **📝 Regras ao Criar Pedido (COLABORADOR/ADMINISTRADOR):**
+### **📝 Regras ao Criar Pedido (COLABORADOR/ADMINISTRADOR)**
 
 ```
 🆕 QUANDO COLABORADOR/ADMINISTRADOR CLICA "NOVO PEDIDO":
@@ -208,7 +337,7 @@ PEDIDOS:
   • Designar funções pros colaboradores
 ```
 
-**Detalhes Técnicos:**
+### **📋 Especificações Técnicas**
 
 | Campo          | Tipo          | Restrições                    | Por que?                                    |
 |----------------|---------------|-------------------------------|---------------------------------------------|
@@ -226,9 +355,9 @@ PEDIDOS:
 | criado_em      | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Preenche automaticamente ao criar           |
 | atualizado_em  | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Atualiza automaticamente ao modificar       |
 
-## 🚦 PASSO 3: ESTADOS E TRANSIÇÕES DO PEDIDO (STATUS)
+## 🚦 PASSO 3: DEFINIR FLUXO DE ESTADOS
 
-### **Fluxo de Estados:**
+### **📊 Fluxo de Estados**
 
 ```
 PENDENTE:
@@ -260,7 +389,7 @@ CANCELADO:
 - ATRASADO não é um "estado final" - o pedido ainda pode ser concluído
 ```
 
-### **Descrição Detalhada de Cada Estado:**
+### **📊 Descrição Detalhada dos Estados**
 
 | Status           | Descrição                                          | Como chega nesse estado?                                    |
 |------------------|----------------------------------------------------|-------------------------------------------------------------|
@@ -270,7 +399,7 @@ CANCELADO:
 | **✅ ENTREGUE**  | Trabalho finalizado e entregue ao cliente          | • Colaborador clica "Concluir" (em_andamento ou atrasado)   |
 | **❌ CANCELADO** | Pedido foi abortado/cancelado                      | • Cliente/Colaborador clica "Cancelar" (qualquer estado)    |
 
-### **⚠️ Regra de Atraso Automático:**
+### **⚠️ Regra de Atraso Automático**
 
 ```
 🤖 JOB AUTOMÁTICO:
@@ -295,11 +424,11 @@ Pedido #42:
   └─► status muda automaticamente para 'atrasado'
 ```
 
-## 🔗 PASSO 4: CONECTAR AS TABELAS (RELACIONAMENTOS)
+## 🔗 PASSO 4: ESTABELECER RELACIONAMENTOS
 
 Agora que sabemos **quais campos** cada tabela tem, vamos conectá-las usando **Foreign Keys (FK)**.
 
-### **Por que precisamos de Foreign Keys?**
+### **🤔 Por que precisamos de Foreign Keys?**
 
 ```
 ❓ PROBLEMA:
@@ -313,7 +442,7 @@ Pedido #1: "Criar Logo"
   As FKs são campos que "apontam" para registros de outra tabela!
 ```
 
-### **Relacionamento 1: CLIENTE cria PEDIDO**
+### **🔗 Relacionamento 1: CLIENTE cria PEDIDO**
 
 ```
 ┌────────────────┐           ┌────────────────┐
@@ -340,7 +469,7 @@ Pedido #1: "Criar Logo"
    └─► Motivo: Pedido sem cliente não faz sentido
 ```
 
-### **Relacionamento 2: RESPONSÁVEL assume PEDIDO**
+### **🔗 Relacionamento 2: RESPONSÁVEL assume PEDIDO**
 
 ```
 ┌────────────────┐           ┌────────────────────┐
@@ -369,7 +498,7 @@ Pedido #1: "Criar Logo"
    └─► Status volta para "pendente" e outros colaboradores/administradores podem encontrola-lo na aba de 'Pedidos Pendentes'
 ```
 
-## 👥 PASSO 5: FUNCIONALIDADES POR NÍVEL DE ACESSO
+## 👥 PASSO 5: DEFINIR PERMISSÕES POR NÍVEL
 
 Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 
@@ -395,7 +524,7 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 | **✅ Finalizados**            | Pedidos que entregou/cancelou                       | Apenas visualizar                   |
 | **👤 Perfil**                 | Nome, Email, Senha, Nível (somente leitura)         | Editar Nome e Senha                 |
 
-#### **📊 Dashboard - Estatísticas e Avisos:**
+### **📊 Dashboard - Estatísticas e Avisos**
 
 ```
 ┌───────────────────────────────────────────────────────┐
@@ -448,6 +577,8 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 | **👨‍💼 Gestão de Equipe**       | Lista de usuários `nivel_acesso = 'colaborador'` ou `'admin'` | Editar `ativo` e `nivel_acesso`     |
 | **📋 Todos os Pedidos**       | Lista completa de todos os pedidos do sistema                 | Visualizar, Editar qualquer campo   |
 | **👤 Perfil**                 | Nome, Email, Senha, Nível (somente leitura)                   | Editar Nome e Senha                 |
+
+### **📊 Dashboard Administrativo**
 
 ```
 ┌───────────────────────────────────────────────────────┐
@@ -513,12 +644,11 @@ Agora vamos ver **o que cada tipo de usuário pode fazer** no sistema.
 └───────────────────────────────────────────────────────┘
 ```
 
-## PASSO 6 **🎯 Ações em Pedido**
+## 🎯 PASSO 6: DEFINIR AÇÕES EM PEDIDOS
 
-#### **✅ Ação: "ASSUMIR" Pedido**
+### **✅ Ação: "ASSUMIR" Pedido**
 
 ```
-
 📋 COLABORADOR MARIA ESTÁ NA TELA "PEDIDOS PENDENTES":
 
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -547,7 +677,7 @@ DEPOIS:
   • João vê o pedido com status "em andamento" em "Meus Pedidos"
 ```
 
-#### **✅ Ação: "CONCLUIR" Pedido**
+### **✅ Ação: "CONCLUIR" Pedido**
 
 ```
 🔄 MARIA ESTÁ EM "MEUS PEDIDOS (EM ABERTO)":
@@ -577,11 +707,11 @@ DEPOIS:
 
 📋 RESULTADO:
   • Pedido sai de "Meus Pedidos (Em Aberto)" da Maria
-  • Pedido apareceE em "Finalizados" da Maria
+  • Pedido aparece em "Finalizados" da Maria
   • João vê o pedido em "Minhas Entregas" com status "entregue"
 ```
 
-#### **❌ Ação: "CANCELAR" Pedido**
+### **❌ Ação: "CANCELAR" Pedido**
 
 ```
 Funciona igual ao "Concluir", mas:
@@ -597,7 +727,9 @@ Funciona igual ao "Concluir", mas:
   • Cliente vê em "Minhas Entregas" com status "cancelado"
 ```
 
-#### PASSO 7: **👥 Gestão de Usuários:**
+## 🔐 PASSO 7: DEFINIR GESTÃO DE USUÁRIOS
+
+### **👥 Tela de Gestão de Usuários**
 
 ```
 🔐 TELA "GESTÃO DE CLIENTES":
@@ -628,13 +760,13 @@ Funciona igual ao "Concluir", mas:
 │                                        │
 │ Nível de Acesso:                       │
 │ 1. Cliente                             │
-│ 2. Colaborador                         |
-| 3. Administrador                       │
+│ 2. Colaborador                         │
+│ 3. Administrador                       │
 │ 0. Manter                              │
 └────────────────────────────────────────┘
 ```
 
-**🔐 Regras de Segurança:**
+### **🔐 Regras de Segurança**
 
 ```
 ⚠️ RESTRIÇÕES PARA PROTEGER O SISTEMA:
