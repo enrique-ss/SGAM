@@ -53,7 +53,7 @@ cd sgam
 2. **Configure suas credenciais do MySQL:**
 ```bash
 # Edite o arquivo de configuração com seu usuário e senha do MySQL
-# (o arquivo já existe no projeto, é o .env)
+# Crie um .env utilizando o .env.exemple como base
 ```
 
 3. **Configure o banco de dados:**
