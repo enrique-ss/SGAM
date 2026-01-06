@@ -1,21 +1,25 @@
-# 🎯 SGAM - Sistema de Gerenciamento de Agência
+# 🎯 SGAM - Sistema de Gerenciamento de Agência de Marketing
 
-> Projeto pessoal para aprender backend, banco de dados e integração com frontend
+> Projeto desenvolvido no programa "RSTI: Desenvolvimento Backend" para gerenciar o fluxo de trabalho de agências criativas
 
 ## 🤔 O que é isso?
 
-Um sistema simples de gerenciamento de pedidos que criei para estudar desenvolvimento backend. A ideia é simular uma agência que recebe pedidos de clientes (tipo fazer logo, criar site, etc) e os colaboradores vão assumindo e entregando esses pedidos.
+O SGAM (Sistema de Gerenciamento de Agência de Marketing) é um sistema completo desenvolvido como projeto final do programa "RSTI Backend". Ele nasceu a partir das necessidades reais da nossa cliente, que precisava de uma solução para organizar pedidos de serviços criativos (design, desenvolvimento web, social media, SEO) e gerenciar o fluxo de trabalho entre clientes e colaboradores.
+
+O sistema permite que clientes solicitem serviços, acompanhem o andamento em tempo real, enquanto colaboradores assumem e gerenciam os pedidos, e administradores controlam toda a operação da agência.
 
 ## 💡 Por que fiz isso?
 
-Queria aprender backend na prática, então pensei: "vou fazer um sisteminha real que eu usaria no dia a dia". Comecei fazendo direto no código, mas virou uma bagunça porque:
+Este projeto foi desenvolvido no contexto do programa "RSTI Backend", onde tínhamos uma cliente real com necessidades específicas de gestão. Durante o desenvolvimento, enfrentei um desafio interessante:
 
-- O backend tinha umas regras
-- O CLI tinha outras regras diferentes
-- O frontend web funcionava de outro jeito
-- Eu mesmo não lembrava mais como deveria funcionar 😅
+- Comecei criando três interfaces diferentes (Backend API, CLI e Web)
+- Cada interface tinha suas próprias regras e comportamentos
+- Isso gerou inconsistências: o backend validava de um jeito, o CLI de outro, e o frontend de outro
+- Eu mesmo ficava confuso sobre qual era o comportamento "correto" 😅
 
-Aí parei tudo e fiz uma **documentação completa** antes de continuar codando. Foi a melhor decisão! Agora sei exatamente o que implementar e tudo fica consistente.
+**A virada de chave:** Parei de codificar e comecei a documentar. Criei uma modelagem de dados completa que serve como fonte única da verdade para todas as interfaces. Foi a melhor decisão do projeto!
+
+Agora todas as interfaces seguem as mesmas regras, o código ficou mais organizado, e qualquer pessoa consegue entender o sistema lendo a documentação.
 
 ## 📚 Documentação
 
@@ -53,7 +57,7 @@ cd sgam
 2. **Configure suas credenciais do MySQL:**
 ```bash
 # Edite o arquivo de configuração com seu usuário e senha do MySQL
-# Crie um .env utilizando o .env.exemple como base
+# (o arquivo já existe no projeto (.env))
 ```
 
 3. **Configure o banco de dados:**
@@ -84,12 +88,19 @@ npm run cli
 
 ## 📖 O que aprendi até agora
 
-- ✅ Importância de documentar ANTES de codificar
-- ✅ Como fazer relacionamentos entre tabelas (Foreign Keys)
+- ✅ Importância de documentar ANTES de codificar (evita retrabalho)
+- ✅ Como fazer relacionamentos entre tabelas (Foreign Keys) no MySQL
 - ✅ Diferença entre regras de negócio e implementação técnica
-- ✅ Como organizar permissões por tipo de usuário
-- ✅ Fluxos de estados
+- ✅ Como organizar permissões por tipo de usuário (RBAC)
+- ✅ Fluxos de estado e transições (pedido: pendente → em_andamento → entregue)
+- ✅ Desenvolvimento com TypeScript e integração com banco de dados
+- ✅ Importância de manter consistência entre múltiplas interfaces
+- ✅ Trabalho em equipe usando Git e GitHub (branches, pull requests, code review)
+- ✅ Como resolver conflitos de merge e manter o código sincronizado
+
 
 ## 🤝 Quer contribuir ou dar feedback?
 
 Fique à vontade! Qualquer dica ou sugestão é bem-vinda. Ainda estou aprendendo, então provavelmente tem muita coisa pra melhorar.
+
+💭 **Reflexão pessoal:** Este projeto me ensinou que código limpo começa com planejamento limpo. O tempo investido em documentação não é perda de tempo, é economia de retrabalho. Foi uma experiência valiosa desenvolver um sistema a partir de necessidades reais de uma cliente no contexto do RSTI Backend.
