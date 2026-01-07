@@ -28,7 +28,6 @@ A parte mais importante desse projeto é a **[documentação de modelagem](docs/
 - Por que decidi fazer essa documentação
 - Como funciona o sistema inteiro
 - Quais são as regras de cada coisa
-- O que cada tipo de usuário pode fazer
 - Como os dados se relacionam
 
 Recomendo ler ela antes de mexer no código!
@@ -39,26 +38,6 @@ Recomendo ler ela antes de mexer no código!
 - **Banco:** MySQL com Knex.js (query builder)
 - **Frontend Web:** HTML, CSS e JavaScript puros (sem frameworks)
 - **CLI:** TypeScript (interface de linha de comando)
-
-## 🏗️ Arquitetura
-
-O projeto segue o padrão **MVC + Service Layer**:
-
-```
-Cliente (HTTP Request)
-    ↓
-Routes (roteamento)
-    ↓
-Middlewares (autenticação, validação)
-    ↓
-Controllers (recebe req/res, valida entrada)
-    ↓
-Services (lógica de negócio)
-    ↓
-Models (interação com banco de dados)
-    ↓
-Response (JSON)
-```
 
 **Responsabilidades:**
 - **Controllers**: Recebem requisições e retornam respostas
