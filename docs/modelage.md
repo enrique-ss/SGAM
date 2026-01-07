@@ -56,7 +56,7 @@ Percebi que o problema não era técnico, era de **planejamento**. Parei de codi
 
 ---
 
-## 📋 PASSO 2: DEFINIR ESTRUTURA DAS TABELAS
+## 📋 PASSO 2: DEFINIR ESTRUTURA DAS TABELAS (CORRIGIDO)
 
 ### **📦 Tabela: USUARIOS**
 
@@ -97,7 +97,19 @@ Para cada usuário:
 ```
 1. Email existe? ✅
 2. Senha correta? ✅
-3. ativo = false? ❌ Bloquear login
+3. ativo = false? ❌ Bloquear login com mensagem:
+   "Conta desativada. Contate um Administrador."
+```
+
+**🚫 DELEÇÃO DE USUÁRIOS:**
+```
+❌ NUNCA deletar usuários do banco de dados (soft delete obrigatório)
+✅ Apenas marcar como ativo = false
+
+Por quê?
+• Preserva integridade referencial (pedidos, logs)
+• Mantém auditoria completa
+• Permite reativação futura se necessário
 ```
 
 ### **📋 Especificações Técnicas - USUARIOS**
@@ -108,11 +120,30 @@ Para cada usuário:
 | nome          | VARCHAR(255)  | NOT NULL                      | Nome obrigatório                            |
 | email         | VARCHAR(255)  | NOT NULL, UNIQUE              | Login único                                 |
 | senha         | VARCHAR(255)  | NOT NULL                      | Hash bcrypt (60 chars)                      |
-| nivel_acesso  | ENUM          | DEFAULT 'cliente'             | cliente, colaborador, admin                 |
+| nivel_acesso  | ENUM          | DEFAULT 'cliente'             | 'cliente', 'colaborador', 'admin'           |
 | ativo         | BOOLEAN       | DEFAULT true                  | Controla acesso ao sistema                  |
 | ultimo_login  | TIMESTAMP     | NULL                          | Última vez que entrou                       |
-| criado_em     | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Data de cadastro                            |
-| atualizado_em | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Última modificação                          |
+| criado_em     | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Data de cadastro (banco controla)           |
+| atualizado_em | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Última modificação (TRIGGER atualiza)       |
+
+**⚠️ DECISÃO TÉCNICA: ENUM vs Tabelas de Domínio**
+```
+Este projeto usa ENUM para simplicidade:
+• nivel_acesso: ENUM('cliente', 'colaborador', 'admin')
+• status: ENUM('pendente', 'em_andamento', 'atrasado', 'entregue', 'cancelado')
+• prioridade: ENUM('baixa', 'media', 'alta', 'urgente')
+
+Vantagens:
+✅ Menos JOINs nas queries
+✅ Validação nativa do banco
+✅ Mais simples de implementar
+
+Desvantagens:
+❌ Mudar valores requer ALTER TABLE
+❌ Sem metadados (descrição, ordem, etc)
+
+💡 Para projetos maiores, considere tabelas de domínio separadas
+```
 
 ---
 
@@ -186,13 +217,13 @@ Log automático:
 | descricao      | TEXT          | NOT NULL                      | Detalhes do pedido                          |
 | orcamento      | DECIMAL(10,2) | NOT NULL                      | Valor até 99.999.999,99                     |
 | prazo_entrega  | DATE          | NOT NULL                      | Data limite (YYYY-MM-DD)                    |
-| status         | ENUM          | DEFAULT 'pendente'            | pendente, em_andamento, atrasado, entregue, cancelado |
-| prioridade     | ENUM          | NULL                          | baixa, media, alta, urgente                 |
+| status         | ENUM          | DEFAULT 'pendente'            | 'pendente', 'em_andamento', 'atrasado', 'entregue', 'cancelado' |
+| prioridade     | ENUM          | NULL                          | 'baixa', 'media', 'alta', 'urgente'         |
 | cancelado_por  | INT           | FK USUARIOS.id, NULL          | Rastreabilidade                             |
 | concluido_por  | INT           | FK USUARIOS.id, NULL          | Rastreabilidade                             |
 | data_conclusao | TIMESTAMP     | NULL                          | Quando finalizou                            |
-| criado_em      | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Data de criação                             |
-| atualizado_em  | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Última modificação                          |
+| criado_em      | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Data de criação (banco controla)            |
+| atualizado_em  | TIMESTAMP     | DEFAULT CURRENT_TIMESTAMP     | Última modificação (TRIGGER atualiza)       |
 
 ---
 
@@ -215,18 +246,19 @@ Log automático:
 
 - **Auditoria:** Saber o que aconteceu com cada pedido
 - **Rastreabilidade:** Quem fez cada mudança e quando
-- **Histórico permanente:** Mesmo deletando o pedido, o log permanece
+- **Histórico permanente:** Log nunca é deletado (pedido_id pode virar NULL se pedido for excluído)
 
 ### **📜 Quando Registra**
 
 ```
 Criar pedido    → status_anterior = NULL, status_novo = 'pendente' ou 'em_andamento'
 Assumir         → 'pendente' → 'em_andamento'
-Atraso (AUTO)   → 'em_andamento' → 'atrasado' (alterado_por = NULL)
+Atraso (AUTO)   → 'em_andamento' → 'atrasado' (alterado_por = NULL, APENAS NA PRIMEIRA VEZ)
 Concluir        → 'em_andamento' ou 'atrasado' → 'entregue'
 Cancelar        → qualquer status → 'cancelado'
 
 ⚡ alterado_por = NULL significa que foi o SISTEMA (não um usuário)
+⚡ Job de atraso gera log APENAS UMA VEZ na primeira detecção
 ```
 
 ### **📋 Especificações Técnicas - PEDIDOS_STATUS_LOG**
@@ -234,15 +266,15 @@ Cancelar        → qualquer status → 'cancelado'
 | Campo           | Tipo       | Restrições                 | Por que?                                    |
 |-----------------|------------|----------------------------|---------------------------------------------|
 | id              | INT        | PK, AUTO_INCREMENT         | Identificador único automático              |
-| pedido_id       | INT        | FK PEDIDOS.id, NOT NULL    | Qual pedido mudou                           |
-| status_anterior | ENUM       | NULL                       | De onde veio (NULL na criação)              |
-| status_novo     | ENUM       | NOT NULL                   | Para onde foi                               |
+| pedido_id       | INT        | FK PEDIDOS.id, NULL        | Qual pedido mudou (NULL se pedido deletado) |
+| status_anterior | ENUM       | NULL                       | 'pendente', 'em_andamento', 'atrasado', 'entregue', 'cancelado' |
+| status_novo     | ENUM       | NOT NULL                   | 'pendente', 'em_andamento', 'atrasado', 'entregue', 'cancelado' |
 | alterado_por    | INT        | FK USUARIOS.id, NULL       | Quem mudou (NULL = sistema)                 |
 | alterado_em     | TIMESTAMP  | DEFAULT CURRENT_TIMESTAMP  | Quando mudou                                |
 
 ---
 
-## 🚦 PASSO 3: DEFINIR FLUXO DE ESTADOS
+## 🚦 PASSO 3: DEFINIR FLUXO DE ESTADOS (CORRIGIDO)
 
 ### **📊 Fluxo de Status**
 
@@ -253,7 +285,7 @@ PENDENTE ──assumir──► EM_ANDAMENTO ──concluir──► ENTREGUE
    │                       │
    │                       ├──atraso (auto)──► ATRASADO ──concluir──► ENTREGUE
    │                       │                       │
-   └───────cancelar────────┴───────cancelar────────┴──► CANCELADO
+   └───────cancelar────────┴───────cancelar───────┴──► CANCELADO
 ```
 
 ### **📊 Descrição dos Estados**
@@ -272,14 +304,18 @@ PENDENTE ──assumir──► EM_ANDAMENTO ──concluir──► ENTREGUE
 Para cada pedido:
   SE status == 'em_andamento'
   E data_atual > prazo_entrega
+  E NÃO existe log com status_novo = 'atrasado' para este pedido
   ENTÃO
     • status = 'atrasado'
     • Cria log com alterado_por = NULL (sistema)
+    
+⚡ Log gerado APENAS UMA VEZ na primeira detecção de atraso
+⚡ Não gera log repetido nos dias seguintes se pedido continuar atrasado
 ```
 
 ---
 
-## 🔗 PASSO 4: ESTABELECER RELACIONAMENTOS
+## 🔗 PASSO 4: ESTABELECER RELACIONAMENTOS (CORRIGIDO)
 
 ### **Por que Foreign Keys?**
 
@@ -288,25 +324,108 @@ Foreign Keys conectam tabelas. Exemplo: `cliente_id` no pedido "aponta" para o `
 ### **Relacionamentos**
 
 ```
-USUARIOS 1───N PEDIDOS (cliente_id)        [ON DELETE CASCADE]
-USUARIOS 1───N PEDIDOS (responsavel_id)    [ON DELETE SET NULL]
-USUARIOS 1───N PEDIDOS (concluido_por)     [ON DELETE SET NULL]
-USUARIOS 1───N PEDIDOS (cancelado_por)     [ON DELETE SET NULL]
+USUARIOS 1───N PEDIDOS (cliente_id)           [PROTEGIDO - Soft Delete]
+   │              
+   ├────1───N PEDIDOS (responsavel_id)        [ON DELETE SET NULL + TRIGGER]
+   │
+   ├────1───N PEDIDOS (concluido_por)         [ON DELETE SET NULL]
+   │
+   ├────1───N PEDIDOS (cancelado_por)         [ON DELETE SET NULL]
+   │
+   └────1───N PEDIDOS_STATUS_LOG (alterado_por) [ON DELETE SET NULL]
 
-PEDIDOS 1───N PEDIDOS_STATUS_LOG (pedido_id)
-ON DELETE RESTRICT
-ltw1
+PEDIDOS 1───N PEDIDOS_STATUS_LOG (pedido_id)  [ON DELETE SET NULL]
 ```
 
 ### **Regras de Deleção**
 
 | Relacionamento | Regra | Motivo |
 |----------------|-------|--------|
-| **cliente_id** | CASCADE | Pedido sem cliente não faz sentido |
-| **responsavel_id** | SET NULL | Pedido fica sem responsável, volta para 'pendente' |
+| **cliente_id** | PROTEGIDO | Usuários NUNCA são deletados (soft delete via ativo=false) |
+| **responsavel_id** | SET NULL + TRIGGER | FK zera o campo, TRIGGER muda status para 'pendente' |
 | **concluido_por / cancelado_por** | SET NULL | Mantém histórico sem identificar quem fez |
-| **pedido_id (log)** | CASCADE | Log sem pedido não faz sentido |
+| **pedido_id (log)** | SET NULL | Log sobrevive para auditoria permanente |
 | **alterado_por (log)** | SET NULL | Mantém histórico sem identificar quem fez |
+
+### **🤖 AUTOMAÇÃO 1: Responsável Inativo → Pedido Volta para Pendente**
+
+**O que acontece:**
+Quando um colaborador é desativado (`ativo = false`), seus pedidos em aberto voltam automaticamente para 'pendente'.
+
+**Como funciona tecnicamente:**
+
+1. **Foreign Key:** `responsavel_id` tem `ON DELETE SET NULL` (se usuário fosse deletado, zeraria o campo)
+2. **Trigger no PEDIDOS:** Detecta quando `responsavel_id` muda de valor para NULL e automaticamente:
+   - Muda `status` para 'pendente'
+   - Gera log com `alterado_por = NULL` (indica sistema)
+
+**Exemplo de comportamento:**
+
+```
+Admin desativa Maria (que tinha 3 pedidos)
+
+ANTES:
+┌────┬─────────────┬────────────────┬──────────────┐
+│ id │ titulo      │ responsavel_id │ status       │
+├────┼─────────────┼────────────────┼──────────────┤
+│ 15 │ Logo Nova   │ 7 (Maria)      │ em_andamento │
+│ 22 │ Site Corp   │ 7 (Maria)      │ em_andamento │
+│ 29 │ Campanha    │ 7 (Maria)      │ atrasado     │
+└────┴─────────────┴────────────────┴──────────────┘
+
+Admin muda Maria para ativo = false
+
+DEPOIS (trigger executou automaticamente):
+┌────┬─────────────┬────────────────┬──────────────┐
+│ id │ titulo      │ responsavel_id │ status       │
+├────┼─────────────┼────────────────┼──────────────┤
+│ 15 │ Logo Nova   │ NULL           │ pendente ✅  │
+│ 22 │ Site Corp   │ NULL           │ pendente ✅  │
+│ 29 │ Campanha    │ NULL           │ pendente ✅  │
+└────┴─────────────┴────────────────┴──────────────┘
+
+LOG GERADO (alterado_por = NULL = Sistema):
+┌────┬───────────┬─────────────────┬────────────┬──────────────┐
+│ id │ pedido_id │ status_anterior │ status_novo│ alterado_por │
+├────┼───────────┼─────────────────┼────────────┼──────────────┤
+│ 87 │ 15        │ em_andamento    │ pendente   │ NULL         │
+│ 88 │ 22        │ em_andamento    │ pendente   │ NULL         │
+│ 89 │ 29        │ atrasado        │ pendente   │ NULL         │
+└────┴───────────┴─────────────────┴────────────┴──────────────┘
+```
+
+**Onde o trigger é criado:**
+- Tabela: `PEDIDOS`
+- Evento: `AFTER UPDATE`
+- Condição: `OLD.responsavel_id IS NOT NULL AND NEW.responsavel_id IS NULL`
+
+### **🤖 AUTOMAÇÃO 2: Atualização de atualizado_em**
+
+**O que acontece:**
+Sempre que um registro de USUARIOS ou PEDIDOS é modificado, o campo `atualizado_em` é atualizado automaticamente.
+
+**Como funciona tecnicamente:**
+
+1. **Trigger no USUARIOS:** `BEFORE UPDATE` seta `NEW.atualizado_em = CURRENT_TIMESTAMP`
+2. **Trigger no PEDIDOS:** `BEFORE UPDATE` seta `NEW.atualizado_em = CURRENT_TIMESTAMP`
+
+**Exemplo de comportamento:**
+
+```
+Desenvolvedor faz UPDATE:
+  UPDATE pedidos SET status = 'entregue' WHERE id = 42;
+
+Banco AUTOMATICAMENTE atualiza:
+  atualizado_em = '2026-01-06 14:30:22' ✅
+  
+⚡ Não precisa lembrar de atualizar manualmente
+⚡ Impossível esquecer ou manipular a data de auditoria
+```
+
+**Onde os triggers são criados:**
+- Tabelas: `USUARIOS` e `PEDIDOS`
+- Evento: `BEFORE UPDATE`
+- Ação: Seta `NEW.atualizado_em = CURRENT_TIMESTAMP`
 
 ---
 
@@ -571,7 +690,6 @@ Log automático:
 - `nivel_acesso` (cliente, colaborador, admin)
 
 ### **🔐 Restrições de Segurança**
-
 ```
 1. Admin NÃO pode alterar próprio nivel_acesso
    → Evita perder acesso admin acidentalmente
@@ -582,48 +700,9 @@ Log automático:
 3. Ao desativar colaborador com pedidos em aberto
    → Sistema avisa: "Este usuário tem X pedidos em aberto"
    → Admin decide se continua
+   → Se continuar, pedidos voltam automaticamente para pendente (trigger)
+
+4. 🚫 NUNCA permitir DELETE de usuários
+   → Apenas desativação (ativo = false)
+   → Preserva integridade dos dados históricos
 ```
-
----
-
-## 🔐 PASSO 8: DEFINIR GESTÃO DE USUÁRIOS
-
-### **👥 Gestão (Admin)**
-
-**Telas:**
-- **Gestão de Clientes:** Lista usuários com `nivel_acesso = 'cliente'`
-- **Gestão de Equipe:** Lista usuários com `nivel_acesso = 'colaborador'` ou `'admin'`
-
-**O que pode editar:**
-- `ativo` (true/false)
-- `nivel_acesso` (cliente, colaborador, admin)
-
-### **🔐 Restrições de Segurança**
-
-```
-1. Admin NÃO pode alterar próprio nivel_acesso
-   → Evita perder acesso admin acidentalmente
-
-2. Admin NÃO pode desativar própria conta
-   → Evita ficar bloqueado do sistema
-
-3. Ao desativar colaborador com pedidos em aberto
-   → Sistema avisa: "Este usuário tem X pedidos em aberto"
-   → Admin decide se continua
-```
-
----
-
-
-## 🎓 CONCLUSÃO
-
-Esta modelagem define **TUDO** que o sistema SGAM precisa:
-
-✅ Estrutura de dados clara e completa  
-✅ Relacionamentos bem definidos  
-✅ Regras de negócio documentadas  
-✅ Permissões por nível de acesso  
-✅ Fluxo de estados e transições  
-✅ Rastreabilidade total com histórico  
-✅ Automações do sistema  
-✅ Validações e segurança
