@@ -58,6 +58,37 @@ Criei uma modelagem de dados completa que serve como **fonte única da verdade**
 
 ---
 
+## 🏗️ Lições de Arquitetura
+
+### **Organização de Código**
+- Cada arquivo deve ter uma responsabilidade única
+- Estrutura de pastas autoexplicativa evita confusão
+- `src/config`, `src/controllers`, `src/services` → cada camada tem seu lugar
+- Não misturar regras de negócio com rotas HTTP
+
+### **Single Source of Truth (SSOT)**
+- Mudanças críticas (ex: status de pedidos) devem passar por **uma função central**
+- Se você pode esquecer de registrar histórico, sua arquitetura falhou
+- Services centralizam lógica, Controllers apenas coordenam
+
+### **Escolha de Tecnologias**
+- **Knex vs ORMs:** Query builder dá mais controle, ORMs abstraem demais
+- **TypeScript:** Previne bugs em tempo de desenvolvimento, não em produção
+- **ENUM no banco:** Validação nativa, mas dificulta mudanças futuras
+- Escolha pela necessidade real, não pelo hype
+
+### **Decisões de Design**
+- **Recursos Futuros:** Marcar claramente o que é V1 e o que fica pra depois
+- Exemplo: Email e inatividade automática → V2 (evita complexidade prematura)
+- MVP funcional > Sistema completo que nunca termina
+
+### **Guard Clauses e Proteções**
+- Validar estado antes de processar (ex: não processar pedidos já atrasados)
+- Prevenir inconsistências com regras fortes (responsavel_id NULL = status pendente)
+- Proteções no código evitam dados corrompidos
+
+---
+
 ## 🔧 Lições de Processo
 
 ### **Trabalho em Equipe**
@@ -74,6 +105,41 @@ Criei uma modelagem de dados completa que serve como **fonte única da verdade**
 - TypeScript força você a pensar antes de escrever
 - Testes automatizados dão confiança para refatorar
 - Convenções de nomenclatura importam (muito!)
+- **Planejar arquitetura antes de codificar economiza semanas de refatoração**
+
+---
+
+## 🐛 Erros Que Cometi (e Como Corrigi)
+
+### **1. Trigger vs Regra de Negócio Duplicada**
+**Erro:** Status mudava em 3 lugares diferentes (app, trigger, job)  
+**Consequência:** Esquecia de registrar log em alguns casos  
+**Correção:** Criar função central que TODA mudança de status passa  
+**Lição:** Uma fonte de verdade previne inconsistências
+
+### **2. Foreign Key Inútil**
+**Erro:** `responsavel_id ON DELETE SET NULL` nunca disparava  
+**Por quê?** Usuários são soft deleted (ativo=false), nunca deletados fisicamente  
+**Correção:** Trigger que reage à desativação, não à deleção  
+**Lição:** Entender como o sistema funciona de verdade, não só teoria
+
+### **3. Campos Redundantes Sem Uso**
+**Erro:** `cancelado_por` e `concluido_por` no pedido + `alterado_por` no log  
+**Problema:** Duplicação sem benefício claro  
+**Correção:** Se for só para queries rápidas, documentar o motivo  
+**Lição:** Toda duplicação precisa justificativa
+
+### **4. Falta de Contexto em Decisões**
+**Erro:** Cliente pode cancelar pedido sem justificativa  
+**Problema:** Não estava claro se precisa notificar responsável, se impacta métricas  
+**Correção:** Documentar impacto e fluxo completo da ação  
+**Lição:** Regra de negócio incompleta gera código incompleto
+
+### **5. Status "Atrasado" Sem Proteção**
+**Erro:** Job processava pedido atrasado todos os dias  
+**Problema:** Gerava logs duplicados  
+**Correção:** Guard clause: se já está atrasado, pular  
+**Lição:** Proteger contra múltiplas execuções
 
 ---
 
@@ -82,5 +148,3 @@ Criei uma modelagem de dados completa que serve como **fonte única da verdade**
 > **"O tempo investido em documentação não é perda de tempo, é economia de retrabalho."**
 
 Este projeto me ensinou que código limpo começa com planejamento limpo. Foi uma experiência valiosa desenvolver um sistema a partir de necessidades reais de uma cliente no contexto do RSTI Backend.
-
-A maior lição: **quando você não sabe mais onde está, pare de andar e olhe o mapa.**
