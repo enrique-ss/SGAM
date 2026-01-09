@@ -6,7 +6,7 @@ Sistema desenvolvido no programa **RSTI Backend** para gerenciar pedidos de serv
 - **Colaboradores** assumam e gerenciem pedidos
 - **Administradores** controlem toda operação da agência
 
-## 🚀 Quick Start
+## 🚀 Como usar
 
 ```bash
 1. git clone https://github.com/seu-usuario/sgam.git (Clona o SGAM para o seu computador)
