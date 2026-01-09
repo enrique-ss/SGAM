@@ -1,13 +1,5 @@
 # 🎯 SGAM - Sistema de Gerenciamento de Agência de Marketing
 
-> Sistema completo para gerenciar fluxo de trabalho de agências criativas
-
-[![Node.js](https://img.shields.io/badge/Node.js-16+-green.svg)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)](https://www.mysql.com/)
-
-## 🤔 O que é o SGAM?
-
 Sistema desenvolvido no programa **RSTI Backend** para gerenciar pedidos de serviços criativos (design, desenvolvimento web, social media, SEO). Permite que:
 
 - **Clientes** solicitem e acompanhem serviços em tempo real
