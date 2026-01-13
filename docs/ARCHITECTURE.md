@@ -698,11 +698,10 @@ projeto-pedidos/
 ### **📄 README.md (frontend)**
 
 **Conteúdo:**
-- Como abrir o projeto
-- Estrutura de pastas
-- Como conectar com backend
-- Páginas disponíveis
-- Variáveis de configuração (API_URL)
+- Sobre
+- Como usar
+- Tech Stack
+- Documentação
 
 ---
 
@@ -772,39 +771,6 @@ Usuário vê resultado na tela
 - Código repetido vira função (utils/)
 - Estilos repetidos viram classes (components.css)
 - Componentes HTML viram funções (components.js)
-
----
-
-## 📊 ESCALABILIDADE
-
-### **Adicionar nova funcionalidade:**
-
-```
-1. Backend:
-   - Criar migration (se precisar nova tabela/coluna)
-   - Adicionar types em types/
-   - Criar service (lógica de negócio)
-   - Criar controller (endpoints)
-   - Adicionar rotas em routes/
-   
-2. Frontend:
-   - Criar página HTML em pages/
-   - Adicionar estilos em pages.css
-   - Criar funções em api.js
-   - Conectar com backend
-```
-
-### **Adicionar novo desenvolvedor:**
-
-```
-1. Clonar repositório
-2. Copiar .env.example para .env
-3. Instalar dependências: npm install
-4. Rodar migrations: npm run migrate
-5. Rodar seeds: npm run seed
-6. Iniciar servidor: npm run dev
-7. Abrir frontend: index.html
-```
 
 ---
 

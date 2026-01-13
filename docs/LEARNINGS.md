@@ -109,7 +109,7 @@ Criei uma modelagem de dados completa que serve como **fonte única da verdade**
 
 ---
 
-## 🐛 Erros Que Cometi (e Como Corrigi)
+## 🐛 Erros Que Cometi (e como corrigi)
 
 ### **1. Trigger vs Regra de Negócio Duplicada**
 **Erro:** Status mudava em 3 lugares diferentes (app, trigger, job)  
@@ -140,11 +140,3 @@ Criei uma modelagem de dados completa que serve como **fonte única da verdade**
 **Problema:** Gerava logs duplicados  
 **Correção:** Guard clause: se já está atrasado, pular  
 **Lição:** Proteger contra múltiplas execuções
-
----
-
-## 💭 Reflexão Final
-
-> **"O tempo investido em documentação não é perda de tempo, é economia de retrabalho."**
-
-Este projeto me ensinou que código limpo começa com planejamento limpo. Foi uma experiência valiosa desenvolver um sistema a partir de necessidades reais de uma cliente no contexto do RSTI Backend.
